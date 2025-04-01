@@ -35,7 +35,7 @@ func (a *PlayerAnimate) Play(ctx *PlayContext) {
 			ctx.Playback().DoPlayerSwingArm(ctx.Tx(), a.PlayerID)
 		})
 		ctx.Playback().DoPlayerSwingArm(ctx.Tx(), a.PlayerID)
-	case PlayerAnimateSneak:
+	case PlayerAnimateSneak, PlayerAnimateStopSneak:
 		prev := ctx.Playback().PlayerSneaking(ctx.Tx(), a.PlayerID)
 		ctx.OnReverse(func(ctx *PlayContext) {
 			ctx.Playback().SetPlayerSneaking(ctx.Tx(), a.PlayerID, prev)

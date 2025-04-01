@@ -3,7 +3,7 @@ module github.com/akmalfairuz/df-replay
 go 1.24.0
 
 require (
-	github.com/df-mc/dragonfly v0.10.3
+	github.com/df-mc/dragonfly v0.10.4-0.20250401153644-2c856ae5db51
 	github.com/go-gl/mathgl v1.2.0
 	github.com/google/uuid v1.6.0
 	github.com/klauspost/compress v1.18.0

@@ -7,7 +7,7 @@ import (
 
 type SetBlock struct {
 	Position  protocol.BlockPos
-	BlockHash uint64
+	BlockHash uint32
 	Layer     uint8
 }
 
@@ -17,7 +17,7 @@ func (*SetBlock) ID() uint8 {
 
 func (a *SetBlock) Marshal(io protocol.IO) {
 	io.BlockPos(&a.Position)
-	io.Varuint64(&a.BlockHash)
+	io.Uint32(&a.BlockHash)
 	io.Uint8(&a.Layer)
 }
 

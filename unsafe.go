@@ -27,3 +27,6 @@ func player_viewers(*player.Player) []world.Viewer
 
 //go:linkname player_updateState github.com/df-mc/dragonfly/player.(*Player).updateState
 func player_updateState(*player.Player)
+
+//go:linkname player_canRelease github.com/df-mc/dragonfly/player.(*Player).canRelease
+func player_canRelease(*player.Player) bool

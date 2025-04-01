@@ -8,7 +8,7 @@ import (
 
 type PlaceBlock struct {
 	Position  protocol.BlockPos
-	BlockHash uint64
+	BlockHash uint32
 }
 
 func (a *PlaceBlock) ID() uint8 {
@@ -17,7 +17,7 @@ func (a *PlaceBlock) ID() uint8 {
 
 func (a *PlaceBlock) Marshal(io protocol.IO) {
 	io.BlockPos(&a.Position)
-	io.Uint64(&a.BlockHash)
+	io.Uint32(&a.BlockHash)
 }
 
 func (a *PlaceBlock) Play(ctx *PlayContext) {
