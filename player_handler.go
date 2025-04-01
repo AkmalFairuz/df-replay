@@ -1,6 +1,7 @@
 package replay
 
 import (
+	"github.com/df-mc/dragonfly/server/block"
 	"github.com/df-mc/dragonfly/server/block/cube"
 	"github.com/df-mc/dragonfly/server/item"
 	"github.com/df-mc/dragonfly/server/player"
@@ -14,6 +15,10 @@ type PlayerHandler struct {
 	player.NopHandler
 
 	r *Recorder
+}
+
+func NewPlayerHandler(r *Recorder) PlayerHandler {
+	return PlayerHandler{r: r}
 }
 
 func (h PlayerHandler) HandleMove(ctx *player.Context, pos mgl64.Vec3, rot cube.Rotation) {
@@ -98,4 +103,36 @@ func (h PlayerHandler) HandleHurt(ctx *player.Context, _ *float64, _ bool, _ *ti
 		return
 	}
 	h.r.PushPlayerHurt(ctx.Val())
+}
+
+func (h PlayerHandler) HandlePunchAir(ctx *player.Context) {
+	if ctx.Cancelled() {
+		return
+	}
+	h.r.PushPlayerSwingArm(ctx.Val())
+}
+
+func (h PlayerHandler) HandleItemUseOnEntity(ctx *player.Context, _ world.Entity) {
+	if ctx.Cancelled() {
+		return
+	}
+	// TODO: this handler may not call SwingArm!
+	h.r.PushPlayerSwingArm(ctx.Val())
+}
+
+func (h PlayerHandler) HandleItemUseOnBlock(ctx *player.Context, pos cube.Pos, _ cube.Face, _ mgl64.Vec3) {
+	if ctx.Cancelled() {
+		return
+	}
+	b := ctx.Val().Tx().Block(pos)
+	if _, ok := b.(block.Activatable); ok {
+		h.r.PushPlayerSwingArm(ctx.Val())
+		return
+	}
+
+	mainHand, _ := ctx.Val().HeldItems()
+	if _, ok := mainHand.Item().(item.UsableOnBlock); ok {
+		h.r.PushPlayerSwingArm(ctx.Val())
+		return
+	}
 }
