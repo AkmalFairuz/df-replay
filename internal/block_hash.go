@@ -15,7 +15,10 @@ var (
 )
 
 func ConstructBlockHashMappings() {
-	for _, b := range world.Blocks() {
+	blocks := world.Blocks()
+	hashToBlockMapping = make(map[uint32]world.Block, len(blocks))
+	blockToHashMapping = make(map[uint64]uint32, len(blocks))
+	for _, b := range blocks {
 		hash := computeHash(b)
 		hashToBlockMapping[hash] = b
 		blockToHashMapping[world.BlockHash(b)] = hash
