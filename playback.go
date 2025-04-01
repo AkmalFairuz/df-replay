@@ -153,20 +153,22 @@ func (w *Playback) SpawnPlayer(tx *world.Tx, name string, id uint32, pos mgl64.V
 		Rotation: rot,
 		NameTag:  name,
 	}
-	conf := player.Config{Name: name}
+	conf := player.Config{
+		Name:      name,
+		Armour:    inventory.NewArmour(nil),
+		Inventory: inventory.New(54, nil),
+		OffHand:   inventory.New(1, nil),
+	}
 	conf.Position = pos
 	conf.Rotation = rot
 	conf.HeldSlot = 0
-	conf.Armour = inventory.NewArmour(nil)
 	conf.Armour.Set(armour[0], armour[1], armour[2], armour[3])
-	conf.Inventory = inventory.New(54, nil)
 	_ = conf.Inventory.SetItem(0, heldItems[0])
-	conf.OffHand = inventory.New(1, nil)
 	_ = conf.OffHand.SetItem(0, heldItems[1])
 	if s, ok := w.skins[id]; ok {
 		conf.Skin = s
 	}
-	h := opts.New(player.Type, conf)
+	h := opts.New(playerType, conf)
 	w.players[id] = &Player{
 		id:   id,
 		name: name,
