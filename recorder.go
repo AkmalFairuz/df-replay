@@ -6,9 +6,11 @@ import (
 	"github.com/akmalfairuz/df-replay/action"
 	"github.com/akmalfairuz/df-replay/internal"
 	"github.com/df-mc/dragonfly/server/block/cube"
+	"github.com/df-mc/dragonfly/server/entity"
 	"github.com/df-mc/dragonfly/server/item"
 	"github.com/df-mc/dragonfly/server/player"
 	"github.com/df-mc/dragonfly/server/player/skin"
+	"github.com/df-mc/dragonfly/server/session"
 	"github.com/df-mc/dragonfly/server/world"
 	"github.com/go-gl/mathgl/mgl64"
 	"github.com/google/uuid"
@@ -30,13 +32,17 @@ type Recorder struct {
 	tick           uint32
 	flushedTick    uint32
 	playerIDs      map[uuid.UUID]uint32
+	entityIDs      map[uuid.UUID]uint32
 	nextID         uint32
+
+	w *world.World
 }
 
 // NewRecorder creates a new recorder, returning a pointer to the recorder.
 func NewRecorder(id uuid.UUID) *Recorder {
 	return &Recorder{
 		id:             id,
+		nextID:         1,
 		buffer:         bytes.NewBuffer(make([]byte, 0, 8192)), // 8KB
 		pendingActions: make(map[uint32][]action.Action, 512),
 	}
@@ -80,6 +86,51 @@ func (r *Recorder) AddPlayer(p *player.Player) {
 	})
 }
 
+// AddEntity ...
+func (r *Recorder) AddEntity(e world.Entity) {
+	r.mu.Lock()
+	var entityID uint32
+	if id, ok := r.entityIDs[e.H().UUID()]; ok {
+		entityID = id
+	} else {
+		entityID = r.nextID
+		r.entityIDs[e.H().UUID()] = entityID
+		r.nextID++
+	}
+	r.mu.Unlock()
+	identifier := e.H().Type().EncodeEntity()
+	if v, ok := e.(session.NetworkEncodeableEntity); ok {
+		identifier = v.NetworkEncodeEntity()
+	}
+	extraData := make(map[string]any)
+	switch e.H().Type() {
+	case entity.ItemType:
+		stack := e.(*entity.Ent).Behaviour().(*entity.ItemBehaviour).Item()
+		extraData["Item"] = int64(internal.ItemToHash(stack.Item()))
+		extraData["ItemCount"] = int32(stack.Count())
+	}
+	r.PushAction(&action.EntitySpawn{
+		EntityID:         entityID,
+		EntityIdentifier: identifier,
+		Position:         vec64To32(e.Position()),
+		Yaw:              float32(e.Rotation().Yaw()),
+		Pitch:            float32(e.Rotation().Pitch()),
+		ExtraData:        extraData,
+	})
+}
+
+// RemoveEntity ...
+func (r *Recorder) RemoveEntity(e world.Entity) {
+	entityID := r.entityID(e)
+	if entityID == 0 {
+		return
+	}
+
+	r.PushAction(&action.EntityDespawn{
+		EntityID: entityID,
+	})
+}
+
 // playerID ...
 func (r *Recorder) playerID(p *player.Player) uint32 {
 	r.mu.Lock()
@@ -90,6 +141,18 @@ func (r *Recorder) playerID(p *player.Player) uint32 {
 		return 0
 	}
 	return playerID
+}
+
+// entityID ...
+func (r *Recorder) entityID(e world.Entity) uint32 {
+	r.mu.Lock()
+	entityID, ok := r.entityIDs[e.H().UUID()]
+	r.mu.Unlock()
+
+	if !ok {
+		return 0
+	}
+	return entityID
 }
 
 // RemovePlayer ...
@@ -113,6 +176,21 @@ func (r *Recorder) PushPlayerMovement(p *player.Player, pos mgl64.Vec3, rot cube
 
 	r.PushAction(&action.PlayerMove{
 		PlayerID: playerID,
+		Position: vec64To32(pos),
+		Yaw:      float32(rot.Yaw()),
+		Pitch:    float32(rot.Pitch()),
+	})
+}
+
+// PushEntityMovement ...
+func (r *Recorder) PushEntityMovement(e world.Entity, pos mgl64.Vec3, rot cube.Rotation) {
+	entityID := r.entityID(e)
+	if entityID == 0 {
+		return
+	}
+
+	r.PushAction(&action.EntityMove{
+		EntityID: entityID,
 		Position: vec64To32(pos),
 		Yaw:      float32(rot.Yaw()),
 		Pitch:    float32(rot.Pitch()),

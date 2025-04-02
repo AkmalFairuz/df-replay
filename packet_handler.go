@@ -33,7 +33,7 @@ func (packetHandler) HandleServerPacket(ctx *intercept.Context, pk packet.Packet
 		}
 		if data.identifier == "minecraft:item" {
 			ctx.Cancel()
-			stack := item.NewStack(internal.HashToItem(uint32(data.extraData["Item"].(int32))), int(data.extraData["ItemCount"].(int32)))
+			stack := item.NewStack(internal.HashToItem(uint32(data.extraData["Item"].(int64))), int(data.extraData["ItemCount"].(int32)))
 			session_writePacket(s, &packet.AddItemActor{
 				EntityUniqueID:  pk.EntityUniqueID,
 				EntityRuntimeID: pk.EntityRuntimeID,
