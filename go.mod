@@ -3,6 +3,7 @@ module github.com/akmalfairuz/df-replay
 go 1.24.0
 
 require (
+	github.com/bedrock-gophers/intercept v0.2.4
 	github.com/df-mc/dragonfly v0.10.4-0.20250401153644-2c856ae5db51
 	github.com/go-gl/mathgl v1.2.0
 	github.com/google/uuid v1.6.0
@@ -13,7 +14,6 @@ require (
 )
 
 require (
-	github.com/bedrock-gophers/intercept v0.2.4 // indirect
 	github.com/brentp/intintmap v0.0.0-20190211203843-30dc0ade9af9 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/df-mc/goleveldb v1.1.9 // indirect

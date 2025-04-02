@@ -31,17 +31,20 @@ func (et etype) BBox(_ world.Entity) cube.BBox {
 }
 
 func (et etype) DecodeNBT(m map[string]any, data *world.EntityData) {
-	data.Data = &replayEntityData{
+	conf := &entityBehaviourConfig{
 		Identifier: m["Identifier"].(string),
 		ExtraData:  m["ExtraData"].(map[string]any),
+	}
+	data.Data = &entityBehaviour{
+		identifier: conf.Identifier,
+		extraData:  conf.ExtraData,
 	}
 }
 
 func (et etype) EncodeNBT(data *world.EntityData) map[string]any {
-	return data.Data.(map[string]any)
-}
-
-type replayEntityData struct {
-	Identifier string
-	ExtraData  map[string]any
+	behaviour := data.Data.(*entityBehaviour)
+	return map[string]any{
+		"Identifier": behaviour.identifier,
+		"ExtraData":  behaviour.extraData,
+	}
 }

@@ -1,3 +1,7 @@
+github.com/akmalfairuz/dragonfly v0.0.0-20250402143035-d85506724841 h1:PHHigPB2pk7xY06ghOPWu2lvh297AMqC9hMq2e/aiT0=
+github.com/akmalfairuz/dragonfly v0.0.0-20250402143035-d85506724841/go.mod h1:pO7nuyRKV50ZVZzB7AhTMU/0p4cvk1/yCu43vFqAzcI=
+github.com/akmalfairuz/dragonfly v0.0.0-20250402155707-39876b5ac25b h1:YDfm3r2ySl9kbSZX/p9XWGoJXctgEap/KlJqwBmG5o0=
+github.com/akmalfairuz/dragonfly v0.0.0-20250402155707-39876b5ac25b/go.mod h1:pO7nuyRKV50ZVZzB7AhTMU/0p4cvk1/yCu43vFqAzcI=
 github.com/bedrock-gophers/intercept v0.2.4 h1:uLuUdT/1XEQoozExbvgUt8DwYkYkljdFh+XIFC1Fzb4=
 github.com/bedrock-gophers/intercept v0.2.4/go.mod h1:UlhMbzIqx/jQyeSBF9QQwROUCcp5Vhvs0QhK959a87I=
 github.com/brentp/intintmap v0.0.0-20190211203843-30dc0ade9af9 h1:/G0ghZwrhou0Wq21qc1vXXMm/t/aKWkALWwITptKbE0=

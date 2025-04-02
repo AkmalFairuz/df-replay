@@ -66,8 +66,15 @@ func (p *replayPlayer) UsingItem() bool {
 }
 
 func (p *replayPlayer) MoveSmooth(pos mgl64.Vec3, rot cube.Rotation) {
-	updatePlayerEntityData(p.Player, "Pos", pos)
-	updatePlayerEntityData(p.Player, "Rot", rot)
+	// detect venity fork
+	if v, ok := toAny(p.Player).(interface {
+		SetPosAndRotNoUpdate(pos mgl64.Vec3, rot cube.Rotation)
+	}); ok {
+		v.SetPosAndRotNoUpdate(pos, rot)
+	} else {
+		updatePlayerEntityData(p.Player, "Pos", pos)
+		updatePlayerEntityData(p.Player, "Rot", rot)
+	}
 
 	for _, v := range player_viewers(p.Player) {
 		v.ViewEntityMovement(p.Player, pos, rot, false)

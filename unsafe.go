@@ -46,8 +46,18 @@ func updatePlayerData(p *player.Player, field string, val any) {
 	f.Set(reflect.ValueOf(val))
 }
 
+func toAny(a any) any {
+	return a
+}
+
 // getSessionByHandle returns the session of a player by its entity handle.
 func getSessionByHandle(h *world.EntityHandle) *session.Session {
+	// detect venity fork
+	if v, ok := toAny(h).(interface{ EntityData() world.EntityData }); ok {
+		if v2, ok := v.EntityData().Data.(interface{ Session() *session.Session }); ok {
+			return v2.Session()
+		}
+	}
 	rf := reflect.ValueOf(h).Elem().FieldByName("data")
 	rs := rf.FieldByName("Data").Elem().FieldByName("s")
 	return reflect.NewAt(rs.Type(), unsafe.Pointer(rs.UnsafeAddr())).Elem().Elem().Interface().(*session.Session)

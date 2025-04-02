@@ -4,6 +4,7 @@ import (
 	"github.com/akmalfairuz/df-replay/internal"
 	"github.com/bedrock-gophers/intercept/intercept"
 	"github.com/df-mc/dragonfly/server/item"
+	"github.com/df-mc/dragonfly/server/world"
 	"github.com/sandertv/gophertunnel/minecraft/protocol/packet"
 )
 
@@ -23,10 +24,16 @@ func (packetHandler) HandleServerPacket(ctx *intercept.Context, pk packet.Packet
 			ctx.Cancel()
 			return
 		}
-		data := getEntityHandleData(h, "Data").(*replayEntityData)
-		if data.Identifier == "minecraft:item" {
+		var data *entityBehaviour
+		// detect venity fork
+		if v, ok := toAny(h).(interface{ EntityData() world.EntityData }); ok {
+			data = v.EntityData().Data.(*entityBehaviour)
+		} else {
+			data = getEntityHandleData(h, "Data").(*entityBehaviour)
+		}
+		if data.identifier == "minecraft:item" {
 			ctx.Cancel()
-			stack := item.NewStack(internal.HashToItem(uint32(data.ExtraData["Item"].(int32))), int(data.ExtraData["ItemCount"].(int32)))
+			stack := item.NewStack(internal.HashToItem(uint32(data.extraData["Item"].(int32))), int(data.extraData["ItemCount"].(int32)))
 			session_writePacket(s, &packet.AddItemActor{
 				EntityUniqueID:  pk.EntityUniqueID,
 				EntityRuntimeID: pk.EntityRuntimeID,
@@ -37,6 +44,6 @@ func (packetHandler) HandleServerPacket(ctx *intercept.Context, pk packet.Packet
 			})
 			return
 		}
-		pk.EntityType = data.Identifier
+		pk.EntityType = data.identifier
 	}
 }

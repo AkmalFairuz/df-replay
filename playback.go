@@ -81,7 +81,10 @@ func (w *Playback) SpawnEntity(tx *world.Tx, id uint32, identifier string, pos m
 		Rotation: rot,
 		Velocity: mgl64.Vec3{},
 	}
-	h := opts.New(entityType, nil)
+	h := opts.New(entityType, entityBehaviourConfig{
+		Identifier: identifier,
+		ExtraData:  extraData,
+	})
 	tx.AddEntity(h)
 	w.entities[id] = &Entity{
 		id:         id,
@@ -105,8 +108,18 @@ func (w *Playback) MoveEntity(tx *world.Tx, id uint32, pos mgl64.Vec3, rot cube.
 	if !ok {
 		return
 	}
-	updateEntEntityData(ent, "Pos", pos)
-	updateEntEntityData(ent, "Rot", rot)
+	if v, ok := toAny(ent).(interface {
+		SetPosAndRot(pos mgl64.Vec3, rot cube.Rotation)
+	}); ok {
+		v.SetPosAndRot(pos, rot)
+	} else {
+		updateEntEntityData(ent, "Pos", pos)
+		updateEntEntityData(ent, "Rot", rot)
+	}
+
+	for _, v := range tx.Viewers(ent.Position()) {
+		v.ViewEntityMovement(ent, pos, rot, false)
+	}
 }
 
 func (w *Playback) EntityPosition(tx *world.Tx, id uint32) (mgl64.Vec3, bool) {
