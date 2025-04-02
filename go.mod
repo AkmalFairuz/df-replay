@@ -13,6 +13,7 @@ require (
 )
 
 require (
+	github.com/bedrock-gophers/intercept v0.2.4 // indirect
 	github.com/brentp/intintmap v0.0.0-20190211203843-30dc0ade9af9 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/df-mc/goleveldb v1.1.9 // indirect

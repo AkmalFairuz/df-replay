@@ -11,4 +11,7 @@ const (
 	IDBreakBlock
 	IDPlaceBlock
 	IDPlayerSkin
+	IDEntitySpawn
+	IDEntityDespawn
+	IDEntityMove
 )

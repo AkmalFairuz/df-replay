@@ -32,4 +32,11 @@ type Playback interface {
 	PlaySound(tx *world.Tx, pos mgl64.Vec3, s world.Sound)
 	UpdatePlayerSkin(tx *world.Tx, id uint32, skin skin.Skin)
 	PlayerName(id uint32) string
+	SpawnEntity(tx *world.Tx, id uint32, identifier string, pos mgl64.Vec3, rot cube.Rotation, extraData map[string]interface{})
+	DespawnEntity(tx *world.Tx, id uint32)
+	MoveEntity(tx *world.Tx, id uint32, pos mgl64.Vec3, rot cube.Rotation)
+	EntityPosition(tx *world.Tx, id uint32) (mgl64.Vec3, bool)
+	EntityRotation(tx *world.Tx, id uint32) (cube.Rotation, bool)
+	EntityIdentifier(id uint32) (string, bool)
+	EntityExtraData(id uint32) (map[string]any, bool)
 }

@@ -1,0 +1,36 @@
+package action
+
+import (
+	"github.com/df-mc/dragonfly/server/block/cube"
+	"github.com/go-gl/mathgl/mgl32"
+	"github.com/sandertv/gophertunnel/minecraft/nbt"
+	"github.com/sandertv/gophertunnel/minecraft/protocol"
+)
+
+type EntitySpawn struct {
+	EntityID         uint32
+	EntityIdentifier string
+	Position         mgl32.Vec3
+	Yaw, Pitch       float32
+	ExtraData        map[string]any
+}
+
+func (a *EntitySpawn) ID() uint8 {
+	return IDEntitySpawn
+}
+
+func (a *EntitySpawn) Marshal(io protocol.IO) {
+	io.Varuint32(&a.EntityID)
+	io.String(&a.EntityIdentifier)
+	io.Vec3(&a.Position)
+	io.Float32(&a.Yaw)
+	io.Float32(&a.Pitch)
+	io.NBT(&a.ExtraData, nbt.LittleEndian)
+}
+
+func (a *EntitySpawn) Play(ctx *PlayContext) {
+	ctx.OnReverse(func(ctx *PlayContext) {
+		ctx.Playback().DespawnEntity(ctx.Tx(), a.EntityID)
+	})
+	ctx.Playback().SpawnEntity(ctx.Tx(), a.EntityID, a.EntityIdentifier, vec32To64(a.Position), cube.Rotation{float64(a.Yaw), float64(a.Pitch)}, a.ExtraData)
+}

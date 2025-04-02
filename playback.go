@@ -75,6 +75,72 @@ func (w *Playback) doTicking() {
 	}
 }
 
+func (w *Playback) SpawnEntity(tx *world.Tx, id uint32, identifier string, pos mgl64.Vec3, rot cube.Rotation, extraData map[string]any) {
+	opts := &world.EntitySpawnOpts{
+		Position: pos,
+		Rotation: rot,
+		Velocity: mgl64.Vec3{},
+	}
+	h := opts.New(entityType, nil)
+	tx.AddEntity(h)
+	w.entities[id] = &Entity{
+		id:         id,
+		h:          h,
+		identifier: identifier,
+		extraData:  extraData,
+	}
+}
+
+func (w *Playback) DespawnEntity(tx *world.Tx, id uint32) {
+	ent, ok := w.openEntity(tx, id)
+	if !ok {
+		return
+	}
+	tx.RemoveEntity(ent)
+	delete(w.entities, id)
+}
+
+func (w *Playback) MoveEntity(tx *world.Tx, id uint32, pos mgl64.Vec3, rot cube.Rotation) {
+	ent, ok := w.openEntity(tx, id)
+	if !ok {
+		return
+	}
+	updateEntEntityData(ent, "Pos", pos)
+	updateEntEntityData(ent, "Rot", rot)
+}
+
+func (w *Playback) EntityPosition(tx *world.Tx, id uint32) (mgl64.Vec3, bool) {
+	ent, ok := w.openEntity(tx, id)
+	if !ok {
+		return mgl64.Vec3{}, false
+	}
+	return ent.Position(), true
+}
+
+func (w *Playback) EntityRotation(tx *world.Tx, id uint32) (cube.Rotation, bool) {
+	ent, ok := w.openEntity(tx, id)
+	if !ok {
+		return cube.Rotation{}, false
+	}
+	return ent.Rotation(), true
+}
+
+func (w *Playback) EntityIdentifier(id uint32) (string, bool) {
+	e, ok := w.entities[id]
+	if !ok {
+		return "", false
+	}
+	return e.identifier, true
+}
+
+func (w *Playback) EntityExtraData(id uint32) (map[string]any, bool) {
+	e, ok := w.entities[id]
+	if !ok {
+		return nil, false
+	}
+	return e.extraData, true
+}
+
 func (w *Playback) PlayerSkin(id uint32) (skin.Skin, bool) {
 	s, ok := w.skins[id]
 	return s, ok
@@ -324,6 +390,19 @@ func (w *Playback) openPlayer(tx *world.Tx, id uint32) (*replayPlayer, bool) {
 	}
 	p, ok := e.(*replayPlayer)
 	return p, ok
+}
+
+// openEntity ...
+func (w *Playback) openEntity(tx *world.Tx, id uint32) (*entity.Ent, bool) {
+	h, ok := w.Entity(id)
+	if !ok {
+		return nil, false
+	}
+	e, ok := h.h.Entity(tx)
+	if !ok {
+		return nil, false
+	}
+	return e.(*entity.Ent), true
 }
 
 // Tick ...

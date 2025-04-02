@@ -8,7 +8,7 @@ import (
 type Action interface {
 	ID() uint8
 	Marshal(io protocol.IO)
-	Play(tx *PlayContext)
+	Play(ctx *PlayContext)
 }
 
 var (
@@ -23,6 +23,9 @@ var (
 		IDBreakBlock:        func() Action { return &BreakBlock{} },
 		IDPlaceBlock:        func() Action { return &PlaceBlock{} },
 		IDPlayerSkin:        func() Action { return &PlayerSkin{} },
+		IDEntitySpawn:       func() Action { return &EntitySpawn{} },
+		IDEntityDespawn:     func() Action { return &EntityDespawn{} },
+		IDEntityMove:        func() Action { return &EntityMove{} },
 	}
 )
 
