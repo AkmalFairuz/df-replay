@@ -3,7 +3,6 @@ package replay
 import (
 	"github.com/akmalfairuz/df-replay/internal"
 	"github.com/df-mc/dragonfly/server/entity"
-	"github.com/df-mc/dragonfly/server/player"
 )
 
 // Init should be called after items, blocks, and entities are registered. We don't
@@ -12,5 +11,5 @@ func Init() {
 	internal.ConstructBlockHashMappings()
 	internal.ConstructItemHashMappings()
 
-	entity.DefaultRegistry = entity.DefaultRegistry.Config().New(append(entity.DefaultRegistry.Types(), ptype{t: player.Type}))
+	entity.DefaultRegistry = entity.DefaultRegistry.Config().New(append(entity.DefaultRegistry.Types(), playerType))
 }
