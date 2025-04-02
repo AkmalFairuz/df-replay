@@ -17,25 +17,25 @@ type RecordPlayerHandler struct {
 	r *Recorder
 }
 
-func NewRecordPlayerHandler(r *Recorder) RecordPlayerHandler {
-	return RecordPlayerHandler{r: r}
+func NewRecordPlayerHandler(r *Recorder) *RecordPlayerHandler {
+	return &RecordPlayerHandler{r: r}
 }
 
-func (h RecordPlayerHandler) HandleMove(ctx *player.Context, pos mgl64.Vec3, rot cube.Rotation) {
+func (h *RecordPlayerHandler) HandleMove(ctx *player.Context, pos mgl64.Vec3, rot cube.Rotation) {
 	if ctx.Cancelled() {
 		return
 	}
 	h.r.PushPlayerMovement(ctx.Val(), pos, rot)
 }
 
-func (h RecordPlayerHandler) HandleToggleSneak(ctx *player.Context, sneaking bool) {
+func (h *RecordPlayerHandler) HandleToggleSneak(ctx *player.Context, sneaking bool) {
 	if ctx.Cancelled() {
 		return
 	}
 	h.r.PushPlayerSneaking(ctx.Val(), sneaking)
 }
 
-func (h RecordPlayerHandler) HandleHeldSlotChange(ctx *player.Context, _, to int) {
+func (h *RecordPlayerHandler) HandleHeldSlotChange(ctx *player.Context, _, to int) {
 	if ctx.Cancelled() {
 		return
 	}
@@ -45,35 +45,35 @@ func (h RecordPlayerHandler) HandleHeldSlotChange(ctx *player.Context, _, to int
 	h.r.PushPlayerUsingItem(ctx.Val(), false)
 }
 
-func (h RecordPlayerHandler) HandleBlockPlace(ctx *player.Context, pos cube.Pos, b world.Block) {
+func (h *RecordPlayerHandler) HandleBlockPlace(ctx *player.Context, pos cube.Pos, b world.Block) {
 	if ctx.Cancelled() {
 		return
 	}
 	h.r.PushPlaceBlock(pos, b)
 }
 
-func (h RecordPlayerHandler) HandleBlockBreak(ctx *player.Context, pos cube.Pos, _ *[]item.Stack, _ *int) {
+func (h *RecordPlayerHandler) HandleBlockBreak(ctx *player.Context, pos cube.Pos, _ *[]item.Stack, _ *int) {
 	if ctx.Cancelled() {
 		return
 	}
 	h.r.PushBreakBlock(pos)
 }
 
-func (h RecordPlayerHandler) HandleItemConsume(ctx *player.Context, _ item.Stack) {
+func (h *RecordPlayerHandler) HandleItemConsume(ctx *player.Context, _ item.Stack) {
 	if ctx.Cancelled() {
 		return
 	}
 	h.r.PushPlayerUsingItem(ctx.Val(), false)
 }
 
-func (h RecordPlayerHandler) HandleItemRelease(ctx *player.Context, _ item.Stack, _ time.Duration) {
+func (h *RecordPlayerHandler) HandleItemRelease(ctx *player.Context, _ item.Stack, _ time.Duration) {
 	if ctx.Cancelled() {
 		return
 	}
 	h.r.PushPlayerUsingItem(ctx.Val(), false)
 }
 
-func (h RecordPlayerHandler) HandleItemUse(ctx *player.Context) {
+func (h *RecordPlayerHandler) HandleItemUse(ctx *player.Context) {
 	if ctx.Cancelled() {
 		return
 	}
@@ -91,28 +91,28 @@ func (h RecordPlayerHandler) HandleItemUse(ctx *player.Context) {
 	}
 }
 
-func (h RecordPlayerHandler) HandleSkinChange(ctx *player.Context, skin *skin.Skin) {
+func (h *RecordPlayerHandler) HandleSkinChange(ctx *player.Context, skin *skin.Skin) {
 	if ctx.Cancelled() {
 		return
 	}
 	h.r.PushSkinChange(ctx.Val(), *skin)
 }
 
-func (h RecordPlayerHandler) HandleHurt(ctx *player.Context, _ *float64, _ bool, _ *time.Duration, _ world.DamageSource) {
+func (h *RecordPlayerHandler) HandleHurt(ctx *player.Context, _ *float64, _ bool, _ *time.Duration, _ world.DamageSource) {
 	if ctx.Cancelled() {
 		return
 	}
 	h.r.PushPlayerHurt(ctx.Val())
 }
 
-func (h RecordPlayerHandler) HandlePunchAir(ctx *player.Context) {
+func (h *RecordPlayerHandler) HandlePunchAir(ctx *player.Context) {
 	if ctx.Cancelled() {
 		return
 	}
 	h.r.PushPlayerSwingArm(ctx.Val())
 }
 
-func (h RecordPlayerHandler) HandleItemUseOnEntity(ctx *player.Context, _ world.Entity) {
+func (h *RecordPlayerHandler) HandleItemUseOnEntity(ctx *player.Context, _ world.Entity) {
 	if ctx.Cancelled() {
 		return
 	}
@@ -120,7 +120,7 @@ func (h RecordPlayerHandler) HandleItemUseOnEntity(ctx *player.Context, _ world.
 	h.r.PushPlayerSwingArm(ctx.Val())
 }
 
-func (h RecordPlayerHandler) HandleItemUseOnBlock(ctx *player.Context, pos cube.Pos, _ cube.Face, _ mgl64.Vec3) {
+func (h *RecordPlayerHandler) HandleItemUseOnBlock(ctx *player.Context, pos cube.Pos, _ cube.Face, _ mgl64.Vec3) {
 	if ctx.Cancelled() {
 		return
 	}
