@@ -277,9 +277,7 @@ func (w *Playback) SetPlayerUsingItem(tx *world.Tx, id uint32, usingItem bool) {
 	if !ok {
 		return
 	}
-	if usingItem {
-		p.UseItem()
-	}
+	p.SetUseItem(usingItem)
 }
 
 func (w *Playback) AddParticle(tx *world.Tx, pos mgl64.Vec3, p world.Particle) {
