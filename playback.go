@@ -10,6 +10,7 @@ import (
 	"github.com/df-mc/dragonfly/server/player/skin"
 	"github.com/df-mc/dragonfly/server/world"
 	"github.com/go-gl/mathgl/mgl64"
+	"sync"
 	"sync/atomic"
 	"time"
 )
@@ -24,9 +25,13 @@ type Playback struct {
 	stopped      bool
 	paused       bool
 	speed        int
-	closed       atomic.Bool
 	reverse      bool
 	ended        bool
+
+	closed  atomic.Bool
+	running sync.WaitGroup
+	once    sync.Once
+	closing chan struct{}
 
 	players         map[uint32]*Player
 	entities        map[uint32]*Entity
@@ -46,21 +51,28 @@ func NewPlayback(w *world.World, data *Data) *Playback {
 		entities:        make(map[uint32]*Entity),
 		skins:           make(map[uint32]skin.Skin),
 		reverseHandlers: make(map[uint32][]func(ctx *action.PlayContext)),
+		closing:         make(chan struct{}),
 	}
 }
 
 // Play ...
 func (w *Playback) Play() {
-	go func() {
-		ticker := time.NewTicker(time.Second / 20)
-		defer ticker.Stop()
-		for {
-			select {
-			case <-ticker.C:
-				<-w.w.Exec(w.Tick)
-			}
+	w.running.Add(1)
+	go w.doTicking()
+}
+
+func (w *Playback) doTicking() {
+	ticker := time.NewTicker(time.Second / 20)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ticker.C:
+			<-w.w.Exec(w.Tick)
+		case <-w.closing:
+			w.running.Done()
+			return
 		}
-	}()
+	}
 }
 
 func (w *Playback) PlayerSkin(id uint32) (skin.Skin, bool) {
@@ -358,4 +370,16 @@ func (w *Playback) Tick(tx *world.Tx) {
 		h(playCtx)
 	}
 	w.playbackTick--
+}
+
+// Close ...
+func (w *Playback) Close() {
+	w.once.Do(w.doClose)
+}
+
+// doClose ...
+func (w *Playback) doClose() {
+	close(w.closing)
+	w.running.Wait()
+	w.closed.Store(true)
 }
