@@ -34,10 +34,11 @@ func ItemToHash(it world.Item) uint32 {
 	if it == nil {
 		it = block.Air{}
 	}
-	hash, ok := itemToHashMapping[ItemToString(it)]
+	itemStr := ItemToString(it)
+	hash, ok := itemToHashMapping[itemStr]
 	if !ok {
 		// slow hash
-		return fnv1.HashString32(ItemToString(it))
+		return fnv1.HashString32(itemStr)
 	}
 	return hash
 }
@@ -45,7 +46,9 @@ func ItemToHash(it world.Item) uint32 {
 func HashToItem(hash uint32) world.Item {
 	it, ok := hashToItemMapping[hash]
 	if !ok {
+		fmt.Println("HashToItem: item not found for hash", hash)
 		return block.Air{}
 	}
+	fmt.Printf("HashToItem: item found for hash %d %+v\n", hash, it)
 	return it
 }

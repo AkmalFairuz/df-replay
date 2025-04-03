@@ -19,6 +19,8 @@ func main() {
 	}
 
 	conf, _ := server.DefaultConfig().Config(slog.Default())
+	conf.ReadOnlyWorld = true
+	conf.PlayerProvider = nil
 	srv := conf.New()
 	replay.Init()
 	data := replay.NewData(uuid.New())

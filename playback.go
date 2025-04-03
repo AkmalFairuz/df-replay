@@ -1,6 +1,7 @@
 package replay
 
 import (
+	"fmt"
 	"github.com/akmalfairuz/df-replay/action"
 	"github.com/df-mc/dragonfly/server/block/cube"
 	"github.com/df-mc/dragonfly/server/entity"
@@ -308,6 +309,7 @@ func (w *Playback) UpdatePlayerHeldItems(tx *world.Tx, id uint32, mainHand item.
 	if !ok {
 		return
 	}
+	fmt.Printf("UpdatePlayerHeldItems %+v %+v\n", mainHand.Item(), offHand.Item())
 	p.SetHeldItems(mainHand, offHand)
 }
 

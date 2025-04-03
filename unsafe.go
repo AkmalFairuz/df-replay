@@ -58,14 +58,14 @@ func getSessionByHandle(h *world.EntityHandle) *session.Session {
 		}
 	}
 	rf := reflect.ValueOf(h).Elem().FieldByName("data")
-	rs := rf.FieldByName("Data").Elem().FieldByName("s")
-	return reflect.NewAt(rs.Type(), unsafe.Pointer(rs.UnsafeAddr())).Elem().Elem().Interface().(*session.Session)
+	rs := rf.FieldByName("Data").Elem().Elem().FieldByName("s")
+	return reflect.NewAt(rs.Type(), unsafe.Pointer(rs.UnsafeAddr())).Elem().Interface().(*session.Session)
 }
 
 // getEntityHandleData ...
 func getEntityHandleData(h *world.EntityHandle, field string) any {
 	rf := reflect.ValueOf(h).Elem().FieldByName("data")
-	f := reflect.NewAt(rf.Type(), unsafe.Pointer(rf.UnsafeAddr())).Elem().Elem().FieldByName(field)
+	f := reflect.NewAt(rf.Type(), unsafe.Pointer(rf.UnsafeAddr())).Elem().FieldByName(field)
 	if !f.CanSet() {
 		return reflect.NewAt(f.Type(), unsafe.Pointer(f.UnsafeAddr())).Elem().Interface()
 	}

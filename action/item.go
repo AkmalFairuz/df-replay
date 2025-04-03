@@ -14,11 +14,11 @@ func ItemFromStack(stack item.Stack) Item {
 	return Item{Hash: internal.ItemToHash(stack.Item())}
 }
 
-func (i Item) Marshal(io protocol.IO) {
+func (i *Item) Marshal(io protocol.IO) {
 	io.Uint32(&i.Hash)
 }
 
-func (i Item) ToStack() item.Stack {
+func (i *Item) ToStack() item.Stack {
 	it := internal.HashToItem(i.Hash)
 	return item.NewStack(it, 1)
 }
