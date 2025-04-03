@@ -1,7 +1,6 @@
 package replay
 
 import (
-	"fmt"
 	"github.com/akmalfairuz/df-replay/action"
 	"github.com/df-mc/dragonfly/server/block/cube"
 	"github.com/df-mc/dragonfly/server/entity"
