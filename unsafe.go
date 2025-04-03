@@ -10,7 +10,6 @@ import (
 	"github.com/sandertv/gophertunnel/minecraft/protocol/packet"
 	"reflect"
 	"unsafe"
-	_ "unsafe"
 )
 
 // updatePlayerData updates the world.EntityData of a player.
@@ -73,20 +72,20 @@ func getEntityHandleData(h *world.EntityHandle, field string) any {
 	return f.Interface()
 }
 
-//go:linkname player_viewers github.com/df-mc/dragonfly/player.(*Player).viewers
+//go:linkname player_viewers github.com/df-mc/dragonfly/server/player.(*Player).viewers
 func player_viewers(*player.Player) []world.Viewer
 
-//go:linkname player_updateState github.com/df-mc/dragonfly/player.(*Player).updateState
+//go:linkname player_updateState github.com/df-mc/dragonfly/server/player.(*Player).updateState
 func player_updateState(*player.Player)
 
-//go:linkname player_canRelease github.com/df-mc/dragonfly/player.(*Player).canRelease
+//go:linkname player_canRelease github.com/df-mc/dragonfly/server/player.(*Player).canRelease
 func player_canRelease(*player.Player) bool
 
-//go:linkname session_writePacket github.com/df-mc/dragonfly/session.(*Session).writePacket
+//go:linkname session_writePacket github.com/df-mc/dragonfly/server/session.(*Session).writePacket
 func session_writePacket(*session.Session, packet.Packet)
 
-//go:linkname session_entityFromRuntimeID github.com/df-mc/dragonfly/session.(*Session).entityFromRuntimeID
+//go:linkname session_entityFromRuntimeID github.com/df-mc/dragonfly/server/session.(*Session).entityFromRuntimeID
 func session_entityFromRuntimeID(*session.Session, uint64) (*world.EntityHandle, bool)
 
-//go:linkname instanceFromItem github.com/df-mc/dragonfly/session.instanceFromItem
+//go:linkname instanceFromItem github.com/df-mc/dragonfly/server/session.instanceFromItem
 func instanceFromItem(item.Stack) protocol.ItemInstance

@@ -19,7 +19,8 @@ type WorldEntityMovementRecorder struct {
 	lastMovement map[uuid.UUID]movementData
 }
 
-func NewWorldEntityMovementRecorder(r *Recorder) *WorldEntityMovementRecorder {
+// newWorldEntityMovementRecorder ...
+func newWorldEntityMovementRecorder(r *Recorder) *WorldEntityMovementRecorder {
 	return &WorldEntityMovementRecorder{
 		r:            r,
 		lastMovement: make(map[uuid.UUID]movementData, 128),
@@ -34,6 +35,9 @@ func (r *WorldEntityMovementRecorder) StartTicking() {
 		select {
 		case <-ticker.C:
 			<-r.r.w.Exec(r.Tick)
+		case <-r.r.closing:
+			r.r.recording.Done()
+			return
 		}
 	}
 }

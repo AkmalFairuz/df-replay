@@ -1,6 +1,7 @@
 package action
 
 import (
+	"fmt"
 	"github.com/samber/lo"
 	"github.com/sandertv/gophertunnel/minecraft/protocol"
 )
@@ -30,15 +31,20 @@ var (
 )
 
 // Read ...
-func Read(io *protocol.Reader, act *Action) bool {
+func Read(io *protocol.Reader, act *Action) (err error) {
 	var id uint8
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("action read id=%d panic: %v", id, r)
+		}
+	}()
 	io.Uint8(&id)
 	if f, ok := actionPool[id]; ok {
 		*act = f()
 		(*act).Marshal(io)
-		return true
+		return nil
 	}
-	return false
+	return fmt.Errorf("unknown action id: %d", id)
 }
 
 // Write ...

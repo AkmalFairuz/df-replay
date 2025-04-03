@@ -11,6 +11,7 @@ type Player struct {
 	id   uint32
 	name string
 	h    *world.EntityHandle
+	l    *world.Loader
 }
 
 var playerType = ptype{t: player.Type}
@@ -34,8 +35,10 @@ func (p ptype) NetworkEncodeEntity() string {
 	return "minecraft:player" // just in case this function is called, even it should not be called
 }
 
-func (p ptype) BBox(e world.Entity) cube.BBox {
-	return p.t.BBox(e)
+func (p ptype) NetworkOffset() float64 { return 1.621 }
+
+func (p ptype) BBox(world.Entity) cube.BBox {
+	return cube.Box(-0.3, 0, -0.3, 0.3, 1.8, 0.3) // TODO: use the real player bbox
 }
 
 func (p ptype) DecodeNBT(m map[string]any, data *world.EntityData) {

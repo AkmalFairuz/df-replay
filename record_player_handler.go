@@ -28,6 +28,14 @@ func (h *RecordPlayerHandler) HandleMove(ctx *player.Context, pos mgl64.Vec3, ro
 	h.r.PushPlayerMovement(ctx.Val(), pos, rot)
 }
 
+func (h *RecordPlayerHandler) HandleTeleport(ctx *player.Context, pos mgl64.Vec3) {
+	if ctx.Cancelled() {
+		return
+	}
+	// TODO: don't use movement
+	h.r.PushPlayerMovement(ctx.Val(), pos, ctx.Val().Rotation())
+}
+
 func (h *RecordPlayerHandler) HandleToggleSneak(ctx *player.Context, sneaking bool) {
 	if ctx.Cancelled() {
 		return
@@ -50,6 +58,7 @@ func (h *RecordPlayerHandler) HandleBlockPlace(ctx *player.Context, pos cube.Pos
 		return
 	}
 	h.r.PushPlaceBlock(pos, b)
+	h.r.PushPlayerSwingArm(ctx.Val())
 }
 
 func (h *RecordPlayerHandler) HandleBlockBreak(ctx *player.Context, pos cube.Pos, _ *[]item.Stack, _ *int) {
@@ -57,6 +66,7 @@ func (h *RecordPlayerHandler) HandleBlockBreak(ctx *player.Context, pos cube.Pos
 		return
 	}
 	h.r.PushBreakBlock(pos)
+	h.r.PushPlayerSwingArm(ctx.Val())
 }
 
 func (h *RecordPlayerHandler) HandleItemConsume(ctx *player.Context, _ item.Stack) {

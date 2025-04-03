@@ -20,7 +20,6 @@ type Playback struct {
 	w    *world.World
 	data *Data
 
-	totalTicks   uint
 	playbackTick uint
 	stopped      bool
 	paused       bool
@@ -229,6 +228,9 @@ func (w *Playback) MovePlayer(tx *world.Tx, id uint32, pos mgl64.Vec3, rot cube.
 		return
 	}
 	p.MoveSmooth(pos, rot)
+
+	p2, _ := w.players[id]
+	p2.l.Move(tx, pos)
 }
 
 func (w *Playback) SetBlock(tx *world.Tx, pos cube.Pos, b world.Block, _ uint8) {
@@ -260,10 +262,13 @@ func (w *Playback) SpawnPlayer(tx *world.Tx, name string, id uint32, pos mgl64.V
 		conf.Skin = s
 	}
 	h := opts.New(playerType, conf)
+	l := world.NewLoader(4, tx.World(), world.NopViewer{})
+	l.Move(tx, pos)
 	w.players[id] = &Player{
 		id:   id,
 		name: name,
 		h:    h,
+		l:    l,
 	}
 	tx.AddEntity(h)
 }
@@ -292,6 +297,9 @@ func (w *Playback) DespawnPlayer(tx *world.Tx, id uint32) {
 		return
 	}
 	tx.RemoveEntity(p)
+
+	p2, _ := w.players[id]
+	p2.l.Close(tx)
 	delete(w.players, id)
 }
 
@@ -425,12 +433,13 @@ func (w *Playback) Tick(tx *world.Tx) {
 	}
 
 	if !w.reverse {
-		if w.playbackTick+1 >= w.totalTicks {
+		if w.playbackTick+1 >= w.data.totalTicks {
 			w.ended = true
 			return
 		}
 		actions, ok := w.data.actions[uint32(w.playbackTick)]
 		if !ok {
+			w.playbackTick++
 			return
 		}
 		reverseHandlers := make([]func(ctx *action.PlayContext), 0, len(actions))
@@ -453,12 +462,14 @@ func (w *Playback) Tick(tx *world.Tx) {
 
 	reverseHandlers, ok := w.reverseHandlers[uint32(w.playbackTick)]
 	if !ok {
+		w.playbackTick--
 		return
 	}
 	for _, h := range reverseHandlers {
 		playCtx := action.NewPlayContext(tx, w)
 		h(playCtx)
 	}
+	delete(w.reverseHandlers, uint32(w.playbackTick))
 	w.playbackTick--
 }
 
@@ -472,4 +483,15 @@ func (w *Playback) doClose() {
 	close(w.closing)
 	w.running.Wait()
 	w.closed.Store(true)
+}
+
+// IsReverse returns true if the playback is in reverse.
+func (w *Playback) IsReverse() bool {
+	return w.reverse
+}
+
+// SetReverse sets the playback to reverse. If reverse is true, the playback
+// will play backwards. If false, the playback will play forwards.
+func (w *Playback) SetReverse(reverse bool) {
+	w.reverse = reverse
 }

@@ -19,6 +19,7 @@ import (
 	"github.com/sandertv/gophertunnel/minecraft/protocol"
 	"io"
 	"sync"
+	"time"
 )
 
 // Recorder ...
@@ -36,6 +37,10 @@ type Recorder struct {
 	nextID         uint32
 
 	w *world.World
+
+	recording sync.WaitGroup
+	closing   chan struct{}
+	once      sync.Once
 }
 
 // NewRecorder creates a new recorder, returning a pointer to the recorder.
@@ -45,7 +50,64 @@ func NewRecorder(id uuid.UUID) *Recorder {
 		nextID:         1,
 		buffer:         bytes.NewBuffer(make([]byte, 0, 8192)), // 8KB
 		pendingActions: make(map[uint32][]action.Action, 512),
+		closing:        make(chan struct{}),
+		playerIDs:      make(map[uuid.UUID]uint32, 32),
+		entityIDs:      make(map[uuid.UUID]uint32, 32),
 	}
+}
+
+// StartTicking ...
+func (r *Recorder) StartTicking(w *world.World) {
+	r.mu.Lock()
+	if r.w != nil {
+		panic("recorder already started")
+	}
+	r.w = w
+	r.mu.Unlock()
+
+	r.recording.Add(2)
+
+	entityMovementRecorder := newWorldEntityMovementRecorder(r)
+	go entityMovementRecorder.StartTicking()
+	go r.startTickCounter()
+}
+
+// startTickCounter ...
+func (r *Recorder) startTickCounter() {
+	ticker := time.NewTicker(time.Second / 20)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ticker.C:
+			r.mu.Lock()
+			r.tick++
+			r.mu.Unlock()
+			r.Flush()
+		case <-r.closing:
+			r.recording.Done()
+			return
+		}
+	}
+}
+
+// CloseAndSaveActions ...
+func (r *Recorder) CloseAndSaveActions(w io.Writer) error {
+	var err error
+	r.once.Do(func() {
+		err = r.doCloseAndSaveActions(w)
+	})
+	return err
+}
+
+// doClose ...
+func (r *Recorder) doCloseAndSaveActions(w io.Writer) error {
+	close(r.closing)
+	r.recording.Wait()
+	r.Flush()
+	if err := r.saveActions(w); err != nil {
+		return err
+	}
+	return nil
 }
 
 // AddPlayer ...
@@ -359,8 +421,8 @@ func (r *Recorder) Flush() {
 	r.flushedTick = r.tick - 1
 }
 
-// SaveActions ...
-func (r *Recorder) SaveActions(w io.Writer) error {
+// saveActions ...
+func (r *Recorder) saveActions(w io.Writer) error {
 	buf := bytes.NewBuffer(nil)
 	r.mu.Lock()
 	if err := binary.Write(buf, binary.LittleEndian, uint32(r.bufferTickLen)); err != nil {

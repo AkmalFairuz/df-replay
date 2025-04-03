@@ -4,24 +4,24 @@ import (
 	"fmt"
 	"github.com/df-mc/dragonfly/server/block"
 	"github.com/df-mc/dragonfly/server/world"
-	"github.com/segmentio/fasthash/fnv1a"
+	"github.com/segmentio/fasthash/fnv1"
 	"sort"
 	"strings"
 )
 
 var (
 	hashToBlockMapping map[uint32]world.Block
-	blockToHashMapping map[uint64]uint32
+	blockToHashMapping map[uint32]uint32
 )
 
 func ConstructBlockHashMappings() {
 	blocks := world.Blocks()
 	hashToBlockMapping = make(map[uint32]world.Block, len(blocks))
-	blockToHashMapping = make(map[uint64]uint32, len(blocks))
+	blockToHashMapping = make(map[uint32]uint32, len(blocks))
 	for _, b := range blocks {
 		hash := computeHash(b)
 		hashToBlockMapping[hash] = b
-		blockToHashMapping[world.BlockHash(b)] = hash
+		blockToHashMapping[world.BlockRuntimeID(b)] = hash
 	}
 }
 
@@ -47,7 +47,7 @@ func computeHash(b world.Block) uint32 {
 		toHash.WriteString(fmt.Sprintf("%v", p.val))
 		toHash.WriteString("|")
 	}
-	return fnv1a.HashString32(toHash.String())
+	return fnv1.HashString32(toHash.String())
 }
 
 func HashToBlock(hash uint32) world.Block {
@@ -59,7 +59,7 @@ func HashToBlock(hash uint32) world.Block {
 }
 
 func BlockToHash(b world.Block) uint32 {
-	k := world.BlockHash(b)
+	k := world.BlockRuntimeID(b)
 	hash, ok := blockToHashMapping[k]
 	if !ok {
 		return 0

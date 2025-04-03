@@ -1,7 +1,8 @@
 package action
 
 const (
-	IDPlayerMove = iota
+	_ = iota
+	IDPlayerMove
 	IDPlayerAnimate
 	IDPlayerSpawn
 	IDPlayerDespawn

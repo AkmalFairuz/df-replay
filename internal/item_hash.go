@@ -2,8 +2,9 @@ package internal
 
 import (
 	"fmt"
+	"github.com/df-mc/dragonfly/server/block"
 	"github.com/df-mc/dragonfly/server/world"
-	"github.com/segmentio/fasthash/fnv1a"
+	"github.com/segmentio/fasthash/fnv1"
 )
 
 var (
@@ -12,25 +13,15 @@ var (
 )
 
 func ConstructItemHashMappings() {
-	constructHashToItemMapping()
-	constructItemToHashMapping()
-}
+	hashToItemMapping = make(map[uint32]world.Item)
+	itemToHashMapping = make(map[string]uint32)
 
-func constructHashToItemMapping() {
-	items := world.Items()
-	hashToItemMapping = make(map[uint32]world.Item, len(items))
-	for _, it := range items {
-		hash := fnv1a.HashString32(ItemToString(it))
+	for _, it := range world.Items() {
+		name, meta := it.EncodeItem()
+		itemStr := fmt.Sprintf("%s:%d", name, meta)
+		hash := fnv1.HashString32(itemStr)
 		hashToItemMapping[hash] = it
-	}
-}
-
-func constructItemToHashMapping() {
-	items := world.Items()
-	itemToHashMapping = make(map[string]uint32, len(items))
-	for _, it := range items {
-		hash := fnv1a.HashString32(ItemToString(it))
-		itemToHashMapping[ItemToString(it)] = hash
+		itemToHashMapping[itemStr] = hash
 	}
 }
 
@@ -40,10 +31,13 @@ func ItemToString(it world.Item) string {
 }
 
 func ItemToHash(it world.Item) uint32 {
+	if it == nil {
+		it = block.Air{}
+	}
 	hash, ok := itemToHashMapping[ItemToString(it)]
 	if !ok {
 		// slow hash
-		return fnv1a.HashString32(ItemToString(it))
+		return fnv1.HashString32(ItemToString(it))
 	}
 	return hash
 }
@@ -51,7 +45,7 @@ func ItemToHash(it world.Item) uint32 {
 func HashToItem(hash uint32) world.Item {
 	it, ok := hashToItemMapping[hash]
 	if !ok {
-		return nil
+		return block.Air{}
 	}
 	return it
 }

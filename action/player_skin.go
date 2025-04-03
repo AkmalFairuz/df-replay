@@ -27,17 +27,17 @@ func (a *PlayerSkin) Marshal(io protocol.IO) {
 	io.Uint32(&a.PlayerID)
 	io.Uint32(&a.SkinWidth)
 	io.Uint32(&a.SkinHeight)
-	io.Bytes(&a.SkinData)
+	io.ByteSlice(&a.SkinData)
 	io.Bool(&a.HasCape)
 	if a.HasCape {
 		io.Uint32(&a.CapeWidth)
 		io.Uint32(&a.CapeHeight)
-		io.Bytes(&a.CapeData)
+		io.ByteSlice(&a.CapeData)
 	}
 	io.String(&a.GeometryName)
 	io.Bool(&a.HasGeometryData)
 	if a.HasGeometryData {
-		io.Bytes(&a.GeometryData)
+		io.ByteSlice(&a.GeometryData)
 	}
 }
 
