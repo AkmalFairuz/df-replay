@@ -13,6 +13,11 @@ type movementData struct {
 	Rot cube.Rotation
 }
 
+func (m movementData) Equal(other movementData) bool {
+	const threshold = 0.001
+	return m.Pos.ApproxEqualThreshold(other.Pos, threshold) && m.Rot[0]-other.Rot[0] < threshold && m.Rot[1]-other.Rot[1] < threshold
+}
+
 type WorldEntityMovementRecorder struct {
 	r *Recorder
 
@@ -45,21 +50,20 @@ func (r *WorldEntityMovementRecorder) StartTicking() {
 // Tick ...
 func (r *WorldEntityMovementRecorder) Tick(tx *world.Tx) {
 	for e := range tx.Entities() {
+		movData := movementData{
+			Pos: e.Position(),
+			Rot: e.Rotation(),
+		}
+
 		lastMovement, ok := r.lastMovement[e.H().UUID()]
 		if !ok {
 			r.r.PushEntityMovement(e, e.Position(), e.Rotation())
-			r.lastMovement[e.H().UUID()] = movementData{
-				Pos: e.Position(),
-				Rot: e.Rotation(),
-			}
+			r.lastMovement[e.H().UUID()] = movData
 			continue
 		}
-		if lastMovement.Pos != e.Position() || lastMovement.Rot != e.Rotation() {
+		if !lastMovement.Equal(movData) {
 			r.r.PushEntityMovement(e, e.Position(), e.Rotation())
-			r.lastMovement[e.H().UUID()] = movementData{
-				Pos: e.Position(),
-				Rot: e.Rotation(),
-			}
+			r.lastMovement[e.H().UUID()] = movData
 		}
 	}
 }
