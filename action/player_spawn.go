@@ -1,7 +1,6 @@
 package action
 
 import (
-	"github.com/df-mc/dragonfly/server/block/cube"
 	"github.com/df-mc/dragonfly/server/item"
 	"github.com/go-gl/mathgl/mgl32"
 	"github.com/sandertv/gophertunnel/minecraft/protocol"
@@ -12,7 +11,7 @@ type PlayerSpawn struct {
 	PlayerName string
 
 	Position   mgl32.Vec3
-	Yaw, Pitch float32
+	Yaw, Pitch uint16
 
 	Helmet, Chestplate, Leggings, Boots Item
 	MainHand, OffHand                   Item
@@ -26,8 +25,8 @@ func (a *PlayerSpawn) Marshal(io protocol.IO) {
 	io.Varuint32(&a.PlayerID)
 	io.String(&a.PlayerName)
 	io.Vec3(&a.Position)
-	io.Float32(&a.Yaw)
-	io.Float32(&a.Pitch)
+	io.Uint16(&a.Yaw)
+	io.Uint16(&a.Pitch)
 	protocol.Single(io, &a.Helmet)
 	protocol.Single(io, &a.Chestplate)
 	protocol.Single(io, &a.Leggings)
@@ -42,7 +41,7 @@ func (a *PlayerSpawn) Play(ctx *PlayContext) {
 	})
 	ctx.Playback().SpawnPlayer(
 		ctx.Tx(), a.PlayerName, a.PlayerID, vec32To64(a.Position),
-		cube.Rotation{float64(a.Yaw), float64(a.Pitch)},
+		DecodeRotation16(a.Yaw, a.Pitch),
 		[4]item.Stack{a.Helmet.ToStack(), a.Chestplate.ToStack(), a.Leggings.ToStack(), a.Boots.ToStack()},
 		[2]item.Stack{a.MainHand.ToStack(), a.OffHand.ToStack()})
 }

@@ -137,8 +137,8 @@ func (r *Recorder) AddPlayer(p *player.Player) {
 		PlayerID:   playerID,
 		PlayerName: p.Name(),
 		Position:   vec64To32(p.Position()),
-		Yaw:        float32(p.Rotation().Yaw()),
-		Pitch:      float32(p.Rotation().Pitch()),
+		Yaw:        action.EncodeYaw16(float32(p.Rotation().Yaw())),
+		Pitch:      action.EncodePitch16(float32(p.Rotation().Pitch())),
 		Helmet:     action.ItemFromStack(p.Armour().Helmet()),
 		Chestplate: action.ItemFromStack(p.Armour().Chestplate()),
 		Leggings:   action.ItemFromStack(p.Armour().Leggings()),
@@ -175,8 +175,8 @@ func (r *Recorder) AddEntity(e world.Entity) {
 		EntityID:         entityID,
 		EntityIdentifier: identifier,
 		Position:         vec64To32(e.Position()),
-		Yaw:              float32(e.Rotation().Yaw()),
-		Pitch:            float32(e.Rotation().Pitch()),
+		Yaw:              action.EncodeYaw16(float32(e.Rotation().Yaw())),
+		Pitch:            action.EncodePitch16(float32(e.Rotation().Pitch())),
 		ExtraData:        extraData,
 	})
 }
@@ -239,8 +239,8 @@ func (r *Recorder) PushPlayerMovement(p *player.Player, pos mgl64.Vec3, rot cube
 	r.PushAction(&action.PlayerMove{
 		PlayerID: playerID,
 		Position: vec64To32(pos),
-		Yaw:      float32(rot.Yaw()),
-		Pitch:    float32(rot.Pitch()),
+		Yaw:      action.EncodeYaw16(float32(rot[0])),
+		Pitch:    action.EncodePitch16(float32(rot[1])),
 	})
 }
 
@@ -254,8 +254,8 @@ func (r *Recorder) PushEntityMovement(e world.Entity, pos mgl64.Vec3, rot cube.R
 	r.PushAction(&action.EntityMove{
 		EntityID: entityID,
 		Position: vec64To32(pos),
-		Yaw:      float32(rot.Yaw()),
-		Pitch:    float32(rot.Pitch()),
+		Yaw:      action.EncodeYaw16(float32(rot[0])),
+		Pitch:    action.EncodePitch16(float32(rot[1])),
 	})
 }
 
