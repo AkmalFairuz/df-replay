@@ -15,7 +15,9 @@ type movementData struct {
 
 func (m movementData) Equal(other movementData) bool {
 	const threshold = 0.001
-	return m.Pos.ApproxEqualThreshold(other.Pos, threshold) && m.Rot[0]-other.Rot[0] < threshold && m.Rot[1]-other.Rot[1] < threshold
+	return m.Pos.ApproxEqualThreshold(other.Pos, threshold) &&
+		mgl64.FloatEqualThreshold(m.Rot[0], other.Rot[0], threshold) &&
+		mgl64.FloatEqualThreshold(m.Rot[1], other.Rot[1], threshold)
 }
 
 type WorldEntityMovementRecorder struct {
