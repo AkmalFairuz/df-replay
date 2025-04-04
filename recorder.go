@@ -107,6 +107,8 @@ func (r *Recorder) doCloseAndSaveActions(w io.Writer) error {
 	if err := r.saveActions(w); err != nil {
 		return err
 	}
+	r.buffer = nil
+	r.w = nil
 	return nil
 }
 
