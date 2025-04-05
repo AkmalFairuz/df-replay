@@ -3,8 +3,10 @@ package replay
 import (
 	"github.com/akmalfairuz/df-replay/internal"
 	"github.com/bedrock-gophers/intercept/intercept"
+	"github.com/df-mc/dragonfly/server/block"
 	"github.com/df-mc/dragonfly/server/item"
 	"github.com/df-mc/dragonfly/server/world"
+	"github.com/sandertv/gophertunnel/minecraft/protocol"
 	"github.com/sandertv/gophertunnel/minecraft/protocol/packet"
 )
 
@@ -43,6 +45,9 @@ func (packetHandler) HandleServerPacket(ctx *intercept.Context, pk packet.Packet
 				EntityMetadata:  pk.EntityMetadata,
 			})
 			return
+		}
+		if _, isTextType := data.extraData["IsTextType"]; isTextType {
+			pk.EntityMetadata[protocol.EntityDataKeyVariant] = world.BlockRuntimeID(block.Air{})
 		}
 		pk.EntityType = data.identifier
 	}

@@ -173,6 +173,8 @@ func (r *Recorder) AddEntity(e world.Entity) {
 		stack := e.(*entity.Ent).Behaviour().(*entity.ItemBehaviour).Item()
 		extraData["Item"] = int64(internal.ItemToHash(stack.Item()))
 		extraData["ItemCount"] = int32(stack.Count())
+	case entity.TextType:
+		extraData["IsTextType"] = byte(1)
 	}
 	var nameTag string
 	if ent, ok := e.(interface{ NameTag() string }); ok {
