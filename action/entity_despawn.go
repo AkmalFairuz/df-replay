@@ -21,9 +21,10 @@ func (a *EntityDespawn) Play(ctx *PlayContext) {
 	prevRot, _ := ctx.Playback().EntityRotation(ctx.Tx(), a.EntityID)
 	prevExtraData, _ := ctx.Playback().EntityExtraData(a.EntityID)
 	prevEntityIdentifier, _ := ctx.Playback().EntityIdentifier(a.EntityID)
+	prevNameTag := ctx.Playback().EntityNameTag(ctx.Tx(), a.EntityID)
 	if ok {
 		ctx.OnReverse(func(ctx *PlayContext) {
-			ctx.Playback().SpawnEntity(ctx.Tx(), a.EntityID, prevEntityIdentifier, prevPos, prevRot, prevExtraData)
+			ctx.Playback().SpawnEntity(ctx.Tx(), a.EntityID, prevEntityIdentifier, prevNameTag, prevPos, prevRot, prevExtraData)
 		})
 	}
 	ctx.Playback().DespawnEntity(ctx.Tx(), a.EntityID)

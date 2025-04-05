@@ -15,4 +15,6 @@ const (
 	IDEntitySpawn
 	IDEntityDespawn
 	IDEntityMove
+	IDPlayerNameTagUpdate
+	IDEntityNameTagUpdate
 )

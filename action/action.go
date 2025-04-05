@@ -14,19 +14,21 @@ type Action interface {
 
 var (
 	actionPool = map[uint8]func() Action{
-		IDPlayerSpawn:       func() Action { return &PlayerSpawn{} },
-		IDPlayerMove:        func() Action { return &PlayerMove{} },
-		IDPlayerAnimate:     func() Action { return &PlayerAnimate{} },
-		IDPlayerDespawn:     func() Action { return &PlayerDespawn{} },
-		IDSetBlock:          func() Action { return &SetBlock{} },
-		IDPlayerHandChange:  func() Action { return &PlayerHandChange{} },
-		IDPlayerArmorChange: func() Action { return &PlayerArmorChange{} },
-		IDBreakBlock:        func() Action { return &BreakBlock{} },
-		IDPlaceBlock:        func() Action { return &PlaceBlock{} },
-		IDPlayerSkin:        func() Action { return &PlayerSkin{} },
-		IDEntitySpawn:       func() Action { return &EntitySpawn{} },
-		IDEntityDespawn:     func() Action { return &EntityDespawn{} },
-		IDEntityMove:        func() Action { return &EntityMove{} },
+		IDPlayerSpawn:         func() Action { return &PlayerSpawn{} },
+		IDPlayerMove:          func() Action { return &PlayerMove{} },
+		IDPlayerAnimate:       func() Action { return &PlayerAnimate{} },
+		IDPlayerDespawn:       func() Action { return &PlayerDespawn{} },
+		IDSetBlock:            func() Action { return &SetBlock{} },
+		IDPlayerHandChange:    func() Action { return &PlayerHandChange{} },
+		IDPlayerArmorChange:   func() Action { return &PlayerArmorChange{} },
+		IDBreakBlock:          func() Action { return &BreakBlock{} },
+		IDPlaceBlock:          func() Action { return &PlaceBlock{} },
+		IDPlayerSkin:          func() Action { return &PlayerSkin{} },
+		IDEntitySpawn:         func() Action { return &EntitySpawn{} },
+		IDEntityDespawn:       func() Action { return &EntityDespawn{} },
+		IDEntityMove:          func() Action { return &EntityMove{} },
+		IDPlayerNameTagUpdate: func() Action { return &PlayerNameTagUpdate{} },
+		IDEntityNameTagUpdate: func() Action { return &EntityNameTagUpdate{} },
 	}
 )
 

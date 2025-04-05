@@ -74,11 +74,44 @@ func (w *Playback) doTicking() {
 	}
 }
 
-func (w *Playback) SpawnEntity(tx *world.Tx, id uint32, identifier string, pos mgl64.Vec3, rot cube.Rotation, extraData map[string]any) {
+func (w *Playback) SetPlayerNameTag(tx *world.Tx, id uint32, nameTag string) {
+	p, ok := w.openPlayer(tx, id)
+	if !ok {
+		return
+	}
+	p.SetNameTag(nameTag)
+}
+
+func (w *Playback) SetEntityNameTag(tx *world.Tx, id uint32, nameTag string) {
+	e, ok := w.openEntity(tx, id)
+	if !ok {
+		return
+	}
+	e.SetNameTag(nameTag)
+}
+
+func (w *Playback) PlayerNameTag(tx *world.Tx, id uint32) string {
+	p, ok := w.openPlayer(tx, id)
+	if !ok {
+		return ""
+	}
+	return p.NameTag()
+}
+
+func (w *Playback) EntityNameTag(tx *world.Tx, id uint32) string {
+	e, ok := w.openEntity(tx, id)
+	if !ok {
+		return ""
+	}
+	return e.NameTag()
+}
+
+func (w *Playback) SpawnEntity(tx *world.Tx, id uint32, identifier, nameTag string, pos mgl64.Vec3, rot cube.Rotation, extraData map[string]any) {
 	opts := &world.EntitySpawnOpts{
 		Position: pos,
 		Rotation: rot,
 		Velocity: mgl64.Vec3{},
+		NameTag:  nameTag,
 	}
 	h := opts.New(entityType, entityBehaviourConfig{
 		Identifier: identifier,
@@ -240,14 +273,14 @@ func (w *Playback) SetBlock(tx *world.Tx, pos cube.Pos, b world.Block, _ uint8) 
 	})
 }
 
-func (w *Playback) SpawnPlayer(tx *world.Tx, name string, id uint32, pos mgl64.Vec3, rot cube.Rotation, armour [4]item.Stack, heldItems [2]item.Stack) {
+func (w *Playback) SpawnPlayer(tx *world.Tx, username, nameTag string, id uint32, pos mgl64.Vec3, rot cube.Rotation, armour [4]item.Stack, heldItems [2]item.Stack) {
 	opts := &world.EntitySpawnOpts{
 		Position: pos,
 		Rotation: rot,
-		NameTag:  name,
+		NameTag:  username,
 	}
 	conf := player.Config{
-		Name:      name,
+		Name:      nameTag,
 		Armour:    inventory.NewArmour(nil),
 		Inventory: inventory.New(54, nil),
 		OffHand:   inventory.New(1, nil),
@@ -266,7 +299,7 @@ func (w *Playback) SpawnPlayer(tx *world.Tx, name string, id uint32, pos mgl64.V
 	l.Move(tx, pos)
 	w.players[id] = &Player{
 		id:   id,
-		name: name,
+		name: username,
 		h:    h,
 		l:    l,
 	}

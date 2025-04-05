@@ -138,6 +138,7 @@ func (r *Recorder) AddPlayer(p *player.Player) {
 	r.PushAction(&action.PlayerSpawn{
 		PlayerID:   playerID,
 		PlayerName: p.Name(),
+		NameTag:    p.NameTag(),
 		Position:   vec64To32(p.Position()),
 		Yaw:        action.EncodeYaw16(float32(p.Rotation().Yaw())),
 		Pitch:      action.EncodePitch16(float32(p.Rotation().Pitch())),
@@ -173,9 +174,14 @@ func (r *Recorder) AddEntity(e world.Entity) {
 		extraData["Item"] = int64(internal.ItemToHash(stack.Item()))
 		extraData["ItemCount"] = int32(stack.Count())
 	}
+	var nameTag string
+	if ent, ok := e.(interface{ NameTag() string }); ok {
+		nameTag = ent.NameTag()
+	}
 	r.PushAction(&action.EntitySpawn{
 		EntityID:         entityID,
 		EntityIdentifier: identifier,
+		NameTag:          nameTag,
 		Position:         vec64To32(e.Position()),
 		Yaw:              action.EncodeYaw16(float32(e.Rotation().Yaw())),
 		Pitch:            action.EncodePitch16(float32(e.Rotation().Pitch())),

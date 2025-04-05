@@ -23,10 +23,11 @@ func (a *PlayerDespawn) Play(ctx *PlayContext) {
 	prevName := ctx.Playback().PlayerName(a.PlayerID)
 	prevRot, _ := ctx.Playback().PlayerRotation(ctx.Tx(), a.PlayerID)
 	prevPos, ok := ctx.Playback().PlayerPosition(ctx.Tx(), a.PlayerID)
+	prevNameTag := ctx.Playback().PlayerNameTag(ctx.Tx(), a.PlayerID)
 	if ok {
 		ctx.OnReverse(func(ctx *PlayContext) {
 			ctx.Playback().SpawnPlayer(
-				ctx.Tx(), prevName, a.PlayerID, prevPos, prevRot,
+				ctx.Tx(), prevName, prevNameTag, a.PlayerID, prevPos, prevRot,
 				[4]item.Stack{prevHelmet, prevChestplate, prevLeggings, prevBoots},
 				[2]item.Stack{prevMainHand, prevOffHand})
 		})
