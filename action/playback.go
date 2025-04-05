@@ -18,7 +18,7 @@ type Playback interface {
 	PlayerUsingItem(tx *world.Tx, id uint32) bool
 	PlayerSkin(id uint32) (skin.Skin, bool)
 	MovePlayer(tx *world.Tx, id uint32, pos mgl64.Vec3, rot cube.Rotation)
-	SetBlock(tx *world.Tx, pos cube.Pos, b world.Block, layer uint8)
+	SetBlock(tx *world.Tx, pos cube.Pos, b world.Block)
 	SpawnPlayer(tx *world.Tx, username, nameTag string, id uint32, pos mgl64.Vec3, rot cube.Rotation, armour [4]item.Stack, heldItems [2]item.Stack)
 	DespawnPlayer(tx *world.Tx, id uint32)
 	UpdatePlayerHeldItems(tx *world.Tx, id uint32, mainHand item.Stack, offHand item.Stack)

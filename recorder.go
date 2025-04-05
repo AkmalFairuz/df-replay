@@ -380,7 +380,6 @@ func (r *Recorder) PushSetBlock(pos cube.Pos, b world.Block) {
 	r.PushAction(&action.SetBlock{
 		Position:  cubeToBlockPos(pos),
 		BlockHash: internal.BlockToHash(b),
-		Layer:     0, // TODO
 	})
 }
 

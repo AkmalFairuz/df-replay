@@ -266,7 +266,7 @@ func (w *Playback) MovePlayer(tx *world.Tx, id uint32, pos mgl64.Vec3, rot cube.
 	p2.l.Move(tx, pos)
 }
 
-func (w *Playback) SetBlock(tx *world.Tx, pos cube.Pos, b world.Block, _ uint8) {
+func (w *Playback) SetBlock(tx *world.Tx, pos cube.Pos, b world.Block) {
 	tx.SetBlock(pos, b, &world.SetOpts{
 		DisableBlockUpdates:       true,
 		DisableLiquidDisplacement: true,
