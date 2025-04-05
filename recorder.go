@@ -401,6 +401,32 @@ func (r *Recorder) PushSetLiquid(pos cube.Pos, l world.Liquid) {
 	})
 }
 
+// PushSetPlayerNameTag ...
+func (r *Recorder) PushSetPlayerNameTag(p *player.Player, nameTag string) {
+	playerID := r.playerID(p)
+	if playerID == 0 {
+		return
+	}
+
+	r.PushAction(&action.PlayerNameTagUpdate{
+		PlayerID: playerID,
+		NameTag:  nameTag,
+	})
+}
+
+// PushSetEntityNameTag ...
+func (r *Recorder) PushSetEntityNameTag(e world.Entity, nameTag string) {
+	entityID := r.entityID(e)
+	if entityID == 0 {
+		return
+	}
+
+	r.PushAction(&action.EntityNameTagUpdate{
+		EntityID: entityID,
+		NameTag:  nameTag,
+	})
+}
+
 // PushAction pushes an action to the recorder, to be written to the buffer at a later time.
 func (r *Recorder) PushAction(a action.Action) {
 	r.mu.Lock()
