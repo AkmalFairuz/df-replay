@@ -74,6 +74,14 @@ func (w *Playback) doTicking() {
 	}
 }
 
+func (w *Playback) Liquid(tx *world.Tx, pos cube.Pos) (world.Liquid, bool) {
+	return tx.Liquid(pos)
+}
+
+func (w *Playback) SetLiquid(tx *world.Tx, pos cube.Pos, l world.Liquid) {
+	tx.SetLiquid(pos, l)
+}
+
 func (w *Playback) SetPlayerNameTag(tx *world.Tx, id uint32, nameTag string) {
 	p, ok := w.openPlayer(tx, id)
 	if !ok {

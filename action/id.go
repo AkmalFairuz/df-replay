@@ -17,4 +17,5 @@ const (
 	IDEntityMove
 	IDPlayerNameTagUpdate
 	IDEntityNameTagUpdate
+	IDSetLiquid
 )

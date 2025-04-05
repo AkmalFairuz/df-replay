@@ -393,6 +393,14 @@ func (r *Recorder) PushSkinChange(p *player.Player, sk skin.Skin) {
 	r.PushAction(skinToAction(playerID, sk))
 }
 
+// PushSetLiquid ...
+func (r *Recorder) PushSetLiquid(pos cube.Pos, l world.Liquid) {
+	r.PushAction(&action.SetLiquid{
+		Position:   cubeToBlockPos(pos),
+		LiquidHash: internal.BlockToHash(l),
+	})
+}
+
 // PushAction pushes an action to the recorder, to be written to the buffer at a later time.
 func (r *Recorder) PushAction(a action.Action) {
 	r.mu.Lock()

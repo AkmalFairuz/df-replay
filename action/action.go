@@ -29,6 +29,7 @@ var (
 		IDEntityMove:          func() Action { return &EntityMove{} },
 		IDPlayerNameTagUpdate: func() Action { return &PlayerNameTagUpdate{} },
 		IDEntityNameTagUpdate: func() Action { return &EntityNameTagUpdate{} },
+		IDSetLiquid:           func() Action { return &SetLiquid{} },
 	}
 )
 

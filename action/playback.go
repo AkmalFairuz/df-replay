@@ -43,4 +43,6 @@ type Playback interface {
 	EntityExtraData(id uint32) (map[string]any, bool)
 	SetPlayerNameTag(tx *world.Tx, id uint32, nameTag string)
 	SetEntityNameTag(tx *world.Tx, id uint32, nameTag string)
+	Liquid(tx *world.Tx, pos cube.Pos) (world.Liquid, bool)
+	SetLiquid(tx *world.Tx, pos cube.Pos, l world.Liquid)
 }
