@@ -126,11 +126,15 @@ func (w *Playback) SpawnEntity(tx *world.Tx, id uint32, identifier, nameTag stri
 		ExtraData:  extraData,
 	})
 	tx.AddEntity(h)
+	l := world.NewLoader(4, tx.World(), world.NopViewer{})
+	l.Move(tx, pos)
+	l.Load(tx, 4)
 	w.entities[id] = &Entity{
 		id:         id,
 		h:          h,
 		identifier: identifier,
 		extraData:  extraData,
+		l:          l,
 	}
 }
 
@@ -140,6 +144,8 @@ func (w *Playback) DespawnEntity(tx *world.Tx, id uint32) {
 		return
 	}
 	tx.RemoveEntity(ent)
+	e, _ := w.entities[id]
+	e.l.Close(tx)
 	delete(w.entities, id)
 }
 
@@ -160,6 +166,10 @@ func (w *Playback) MoveEntity(tx *world.Tx, id uint32, pos mgl64.Vec3, rot cube.
 	for _, v := range tx.Viewers(ent.Position()) {
 		v.ViewEntityMovement(ent, pos, rot, false)
 	}
+
+	e, _ := w.entities[id]
+	e.l.Move(tx, pos)
+	e.l.Load(tx, 4)
 }
 
 func (w *Playback) EntityPosition(tx *world.Tx, id uint32) (mgl64.Vec3, bool) {
@@ -272,6 +282,7 @@ func (w *Playback) MovePlayer(tx *world.Tx, id uint32, pos mgl64.Vec3, rot cube.
 
 	p2, _ := w.players[id]
 	p2.l.Move(tx, pos)
+	p2.l.Load(tx, 4)
 }
 
 func (w *Playback) SetBlock(tx *world.Tx, pos cube.Pos, b world.Block) {
@@ -305,6 +316,7 @@ func (w *Playback) SpawnPlayer(tx *world.Tx, username, nameTag string, id uint32
 	h := opts.New(playerType, conf)
 	l := world.NewLoader(4, tx.World(), world.NopViewer{})
 	l.Move(tx, pos)
+	l.Load(tx, 4)
 	w.players[id] = &Player{
 		id:   id,
 		name: username,

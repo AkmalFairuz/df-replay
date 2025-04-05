@@ -11,6 +11,7 @@ type Entity struct {
 	identifier string
 	extraData  map[string]any
 	h          *world.EntityHandle
+	l          *world.Loader
 }
 
 var entityType = etype{}
