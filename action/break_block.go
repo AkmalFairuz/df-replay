@@ -22,8 +22,8 @@ func (a *BreakBlock) Play(ctx *PlayContext) {
 	pos := blockPosToCubePos(a.Position)
 	prevBlock := ctx.Playback().Block(ctx.Tx(), pos)
 	ctx.OnReverse(func(ctx *PlayContext) {
-		ctx.Playback().SetBlock(ctx.Tx(), pos, prevBlock, 0)
+		ctx.Playback().SetBlock(ctx.Tx(), pos, prevBlock)
 	})
-	ctx.Playback().SetBlock(ctx.Tx(), pos, block.Air{}, 0)
+	ctx.Playback().SetBlock(ctx.Tx(), pos, block.Air{})
 	ctx.Playback().AddParticle(ctx.Tx(), pos.Vec3Centre(), particle.BlockBreak{Block: prevBlock})
 }
