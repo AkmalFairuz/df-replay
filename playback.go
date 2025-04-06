@@ -66,7 +66,13 @@ func (w *Playback) doTicking() {
 	for {
 		select {
 		case <-ticker.C:
-			<-w.w.Exec(w.Tick)
+			select {
+			case <-w.closing:
+				w.running.Done()
+				return
+			default:
+				<-w.w.Exec(w.Tick)
+			}
 		case <-w.closing:
 			w.running.Done()
 			return
