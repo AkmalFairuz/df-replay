@@ -82,7 +82,10 @@ func (r *Recorder) startTickCounter() {
 			r.mu.Lock()
 			r.tick++
 			r.mu.Unlock()
-			r.Flush()
+
+			if r.tick%3600 == 0 { // 3 minutes
+				r.Flush()
+			}
 		case <-r.closing:
 			r.recording.Done()
 			return
@@ -442,6 +445,12 @@ func (r *Recorder) PushAction(a action.Action) {
 
 // Flush flushes all pending actions to the buffer, writing them to the buffer.
 func (r *Recorder) Flush() {
+	select {
+	case <-r.closing:
+		return
+	default:
+	}
+
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
