@@ -45,9 +45,8 @@ func (r *WorldEntityMovementRecorder) StartTicking() {
 			case <-r.r.closing:
 				r.r.recording.Done()
 				return
-			default:
+			case <-r.r.w.Exec(r.Tick):
 			}
-			<-r.r.w.Exec(r.Tick)
 		case <-r.r.closing:
 			r.r.recording.Done()
 			return

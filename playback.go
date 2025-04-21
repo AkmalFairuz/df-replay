@@ -70,8 +70,7 @@ func (w *Playback) doTicking() {
 			case <-w.closing:
 				w.running.Done()
 				return
-			default:
-				<-w.w.Exec(w.Tick)
+			case <-w.w.Exec(w.Tick):
 			}
 		case <-w.closing:
 			w.running.Done()
