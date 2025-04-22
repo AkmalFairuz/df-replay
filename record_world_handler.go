@@ -32,6 +32,7 @@ func (h *RecordWorldHandler) HandleEntityDespawn(tx *world.Tx, e world.Entity) {
 		h.r.RemovePlayer(p)
 		return
 	}
+	h.r.entityMovementRecorder.removeLastMovement(e)
 	h.r.RemoveEntity(e)
 }
 

@@ -84,3 +84,8 @@ func (r *WorldEntityMovementRecorder) Tick(tx *world.Tx) {
 		}
 	}
 }
+
+// removeLastMovement removes the last movement data for the given entity.
+func (r *WorldEntityMovementRecorder) removeLastMovement(e world.Entity) {
+	delete(r.lastMovement, e.H().UUID())
+}

@@ -41,6 +41,8 @@ type Recorder struct {
 	recording sync.WaitGroup
 	closing   chan struct{}
 	once      sync.Once
+
+	entityMovementRecorder *WorldEntityMovementRecorder
 }
 
 // NewRecorder creates a new recorder, returning a pointer to the recorder.
@@ -58,6 +60,8 @@ func NewRecorder(id uuid.UUID) *Recorder {
 
 // StartTicking ...
 func (r *Recorder) StartTicking(w *world.World) {
+	r.entityMovementRecorder = newWorldEntityMovementRecorder(r)
+
 	r.mu.Lock()
 	if r.w != nil {
 		panic("recorder already started")
@@ -67,8 +71,7 @@ func (r *Recorder) StartTicking(w *world.World) {
 
 	r.recording.Add(2)
 
-	entityMovementRecorder := newWorldEntityMovementRecorder(r)
-	go entityMovementRecorder.StartTicking()
+	go r.entityMovementRecorder.StartTicking()
 	go r.startTickCounter()
 }
 
