@@ -2,6 +2,7 @@ package replay
 
 import (
 	"github.com/df-mc/dragonfly/server/block/cube"
+	"github.com/df-mc/dragonfly/server/player"
 	"github.com/df-mc/dragonfly/server/world"
 	"github.com/go-gl/mathgl/mgl64"
 	"github.com/google/uuid"
@@ -57,6 +58,10 @@ func (r *WorldEntityMovementRecorder) StartTicking() {
 // Tick ...
 func (r *WorldEntityMovementRecorder) Tick(tx *world.Tx) {
 	for e := range tx.Entities() {
+		if _, isPlayer := e.(*player.Player); isPlayer {
+			continue
+		}
+
 		movData := movementData{
 			Pos: e.Position(),
 			Rot: e.Rotation(),
