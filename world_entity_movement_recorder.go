@@ -57,6 +57,11 @@ func (r *WorldEntityMovementRecorder) StartTicking() {
 
 // Tick ...
 func (r *WorldEntityMovementRecorder) Tick(tx *world.Tx) {
+	select {
+	case <-r.r.closing:
+		return
+	default:
+	}
 	for e := range tx.Entities() {
 		if _, isPlayer := e.(*player.Player); isPlayer {
 			continue

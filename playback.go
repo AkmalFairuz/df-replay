@@ -486,6 +486,11 @@ func (w *Playback) openEntity(tx *world.Tx, id uint32) (*entity.Ent, bool) {
 
 // Tick ...
 func (w *Playback) Tick(tx *world.Tx) {
+	select {
+	case <-w.closing:
+		return
+	default:
+	}
 	if w.paused {
 		return
 	}
