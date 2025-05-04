@@ -20,6 +20,39 @@ func NewRecordWorldHandler(r *Recorder) *RecordWorldHandler {
 	}
 }
 
+func (h *RecordWorldHandler) HandleLiquidFlow(ctx *world.Context, from, into cube.Pos, liquid world.Liquid, replaced world.Block) {
+	if ctx.Cancelled() {
+		return
+	}
+	h.r.PushSetLiquid(into, liquid)
+}
+
+func (h *RecordWorldHandler) HandleLiquidDecay(ctx *world.Context, pos cube.Pos, before, after world.Liquid) {
+	if ctx.Cancelled() {
+		return
+	}
+	h.r.PushSetLiquid(pos, after)
+}
+
+func (h *RecordWorldHandler) HandleLiquidHarden(ctx *world.Context, hardenedPos cube.Pos, liquidHardened, otherLiquid, newBlock world.Block) {
+	if ctx.Cancelled() {
+		return
+	}
+	h.r.PushSetBlock(hardenedPos, newBlock)
+}
+
+func (h *RecordWorldHandler) HandleLeavesDecay(ctx *world.Context, pos cube.Pos) {
+	if ctx.Cancelled() {
+		return
+	}
+	b := ctx.Val().Block(pos)
+	b2, ok := b.(block.Leaves)
+	if ok {
+		b2.ShouldUpdate = false
+		h.r.PushSetBlock(pos, b2)
+	}
+}
+
 func (h *RecordWorldHandler) HandleEntitySpawn(tx *world.Tx, e world.Entity) {
 	if _, ok := e.(*player.Player); ok {
 		return
