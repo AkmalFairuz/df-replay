@@ -55,6 +55,7 @@ func NewRecorder(id uuid.UUID) *Recorder {
 		closing:        make(chan struct{}),
 		playerIDs:      make(map[uuid.UUID]uint32, 32),
 		entityIDs:      make(map[uuid.UUID]uint32, 32),
+		tick:           1,
 	}
 }
 
@@ -458,7 +459,7 @@ func (r *Recorder) Flush() {
 	defer r.mu.Unlock()
 
 	w := protocol.NewWriter(r.buffer, 0)
-	for tick := r.flushedTick; tick < r.tick; tick++ {
+	for tick := r.flushedTick + 1; tick < r.tick; tick++ {
 		r.bufferTickLen++
 		w.Varuint32(lo.ToPtr(tick))
 		if actions, ok := r.pendingActions[tick]; ok {

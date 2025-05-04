@@ -53,7 +53,6 @@ func NewPlayback(w *world.World, data *Data) *Playback {
 		reverseHandlers: make(map[uint32][]func(ctx *action.PlayContext)),
 		closing:         make(chan struct{}),
 		speed:           1.0,
-		playbackTick:    -1,
 	}
 }
 
