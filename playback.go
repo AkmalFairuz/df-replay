@@ -10,6 +10,7 @@ import (
 	"github.com/df-mc/dragonfly/server/player/skin"
 	"github.com/df-mc/dragonfly/server/world"
 	"github.com/go-gl/mathgl/mgl64"
+	"iter"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -656,4 +657,15 @@ func (w *Playback) MaxPlaybackTick() uint {
 // Duration returns the duration of the playback.
 func (w *Playback) Duration() time.Duration {
 	return time.Duration(w.data.totalTicks) * time.Second / 20
+}
+
+// Players ...
+func (w *Playback) Players() iter.Seq[*Player] {
+	return func(yield func(*Player) bool) {
+		for _, p := range w.players {
+			if !yield(p) {
+				break
+			}
+		}
+	}
 }

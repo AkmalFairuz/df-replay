@@ -14,6 +14,18 @@ type Player struct {
 	l    *world.Loader
 }
 
+func (p *Player) ExecEntity(tx *world.Tx, fn func(*world.Tx, world.Entity)) bool {
+	e, ok := p.h.Entity(tx)
+	if !ok {
+		return false
+	}
+	if e, ok := e.(*replayPlayer); ok {
+		fn(tx, e)
+		return true
+	}
+	return p.h.ExecWorld(fn)
+}
+
 var playerType = ptype{t: player.Type}
 
 func init() {}
