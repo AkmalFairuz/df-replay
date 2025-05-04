@@ -516,7 +516,7 @@ func (w *Playback) Tick(tx *world.Tx) {
 	// Handle forward playback
 	if !w.reverse {
 		// Check if we've reached the end
-		if w.playbackTick+1 >= w.data.totalTicks {
+		if w.playbackTick+1 > w.data.totalTicks {
 			w.ended = true
 			return
 		}
@@ -626,7 +626,7 @@ func (w *Playback) SetSpeed(speed float64) {
 
 // FastForward moves the playback forward by the given number of ticks.
 func (w *Playback) FastForward(tx *world.Tx, ticks uint) {
-	untilTick := min(w.playbackTick+ticks, w.data.totalTicks-1)
+	untilTick := min(w.playbackTick+ticks, w.data.totalTicks)
 
 	for i := w.playbackTick + 1; i < untilTick; i++ {
 		w.playTick(tx, i)
