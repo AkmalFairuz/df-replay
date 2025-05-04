@@ -458,7 +458,7 @@ func (r *Recorder) Flush() {
 	defer r.mu.Unlock()
 
 	w := protocol.NewWriter(r.buffer, 0)
-	for tick := r.flushedTick + 1; tick < r.tick; tick++ {
+	for tick := r.flushedTick; tick < r.tick; tick++ {
 		r.bufferTickLen++
 		w.Varuint32(lo.ToPtr(tick))
 		if actions, ok := r.pendingActions[tick]; ok {

@@ -7,6 +7,7 @@ import (
 	"github.com/df-mc/dragonfly/server"
 	"github.com/df-mc/dragonfly/server/item"
 	"github.com/df-mc/dragonfly/server/player"
+	"github.com/df-mc/dragonfly/server/world"
 	"github.com/google/uuid"
 	"log/slog"
 	"os"
@@ -40,6 +41,8 @@ func main() {
 		_ = p.Inventory().SetItem(3, item.NewStack(item.Emerald{}, 1).WithValue("replay_item", "speed_up").WithCustomName("Speed Up"))
 		_ = p.Inventory().SetItem(4, item.NewStack(item.GoldIngot{}, 1).WithValue("replay_item", "speed_down").WithCustomName("Speed Down"))
 		playback.Play()
+		p.SetGameMode(world.GameModeSpectator)
+		srv.World().SetTime(3000)
 	}
 }
 
