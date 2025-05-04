@@ -108,9 +108,9 @@ func (r *Recorder) CloseAndSaveActions(w io.Writer) error {
 
 // doClose ...
 func (r *Recorder) doCloseAndSaveActions(w io.Writer) error {
-	r.Flush()
 	close(r.closing)
 	r.recording.Wait()
+	r.doFlush(true)
 	if err := r.saveActions(w); err != nil {
 		return err
 	}
@@ -455,11 +455,19 @@ func (r *Recorder) Flush() {
 	default:
 	}
 
+	r.doFlush(false)
+}
+
+func (r *Recorder) doFlush(closing bool) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
 	w := protocol.NewWriter(r.buffer, 0)
-	for tick := r.flushedTick + 1; tick < r.tick; tick++ {
+	untilTick := r.tick
+	if !closing {
+		untilTick--
+	}
+	for tick := r.flushedTick + 1; tick <= untilTick; tick++ {
 		r.bufferTickLen++
 		w.Varuint32(lo.ToPtr(tick))
 		if actions, ok := r.pendingActions[tick]; ok {
@@ -474,7 +482,7 @@ func (r *Recorder) Flush() {
 			w.Varuint32(lo.ToPtr(uint32(0)))
 		}
 	}
-	r.flushedTick = r.tick - 1
+	r.flushedTick = untilTick
 }
 
 // saveActions ...
