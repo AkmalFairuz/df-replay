@@ -146,3 +146,10 @@ func (h *RecordPlayerHandler) HandleItemUseOnBlock(ctx *player.Context, pos cube
 		return
 	}
 }
+
+func (h *RecordPlayerHandler) HandleAttackEntity(ctx *player.Context, _ world.Entity, _, _ *float64, _ *bool) {
+	if ctx.Cancelled() {
+		return
+	}
+	h.r.PushPlayerSwingArm(ctx.Val())
+}
