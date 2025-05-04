@@ -35,6 +35,10 @@ func main() {
 		intercept.Intercept(p)
 		p.Handle(&playerHandler{p: playback})
 		_ = p.Inventory().SetItem(0, item.NewStack(item.Diamond{}, 1).WithValue("replay_item", "toggle_reverse").WithCustomName("Toggle Reverse"))
+		_ = p.Inventory().SetItem(1, item.NewStack(item.AmethystShard{}, 1).WithValue("replay_item", "fast_forward").WithCustomName("Fast Forward"))
+		_ = p.Inventory().SetItem(2, item.NewStack(item.EchoShard{}, 1).WithValue("replay_item", "rewind").WithCustomName("Rewind"))
+		_ = p.Inventory().SetItem(3, item.NewStack(item.Emerald{}, 1).WithValue("replay_item", "speed_up").WithCustomName("Speed Up"))
+		_ = p.Inventory().SetItem(4, item.NewStack(item.GoldIngot{}, 1).WithValue("replay_item", "speed_down").WithCustomName("Speed Down"))
 		playback.Play()
 	}
 }
@@ -54,5 +58,19 @@ func (h *playerHandler) HandleItemUse(ctx *player.Context) {
 	case "toggle_reverse":
 		h.p.SetReverse(!h.p.Reversed())
 		ctx.Val().Messagef("reverse: %v", h.p.Reversed())
+	case "fast_forward":
+		h.p.FastForward(ctx.Val().Tx(), 100) // 5seconds
+	case "rewind":
+		h.p.Rewind(ctx.Val().Tx(), 100) // 5seconds
+	case "speed_up":
+		// Increase playback speed by 0.5, up to a maximum of 5.0
+		newSpeed := min(h.p.Speed()+0.5, 5.0)
+		h.p.SetSpeed(newSpeed)
+		ctx.Val().Messagef("playback speed: %.1fx", newSpeed)
+	case "speed_down":
+		// Decrease playback speed by 0.5, down to a minimum of 0.1
+		newSpeed := max(h.p.Speed()-0.5, 0.1)
+		h.p.SetSpeed(newSpeed)
+		ctx.Val().Messagef("playback speed: %.1fx", newSpeed)
 	}
 }

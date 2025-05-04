@@ -15,7 +15,7 @@ import (
 	"time"
 )
 
-// Playback ...
+// Playback handles the playback of recorded actions.
 type Playback struct {
 	w    *world.World
 	data *Data
@@ -23,7 +23,7 @@ type Playback struct {
 	playbackTick uint
 	stopped      bool
 	paused       bool
-	speed        int
+	speed        float64
 	reverse      bool
 	ended        bool
 
@@ -41,7 +41,7 @@ type Playback struct {
 // Compile time check to ensure that Playback implements action.Playback.
 var _ action.Playback = (*Playback)(nil)
 
-// NewPlayback ...
+// NewPlayback creates a new playback instance with the given world and data.
 func NewPlayback(w *world.World, data *Data) *Playback {
 	return &Playback{
 		w:               w,
@@ -51,27 +51,41 @@ func NewPlayback(w *world.World, data *Data) *Playback {
 		skins:           make(map[uint32]skin.Skin),
 		reverseHandlers: make(map[uint32][]func(ctx *action.PlayContext)),
 		closing:         make(chan struct{}),
+		speed:           1.0,
 	}
 }
 
-// Play ...
+// Play starts the playback.
 func (w *Playback) Play() {
 	w.running.Add(1)
 	go w.doTicking()
 }
 
 func (w *Playback) doTicking() {
-	ticker := time.NewTicker(time.Second / 20)
+	ticker := time.NewTicker(time.Second / 100) // 100hz base tick
 	defer ticker.Stop()
+
+	tickAccumulator := 0.0
+
 	for {
 		select {
 		case <-ticker.C:
-			select {
-			case <-w.closing:
-				w.running.Done()
-				return
-			case <-w.w.Exec(w.Tick):
+			// target ticks per second
+			tickRate := 20.0 * w.speed
+			// because we are at 100hz
+			tickAccumulator += tickRate / 100
+
+			// if accumulator >= 1, run one or more ticks to catch up:
+			for tickAccumulator >= 1.0 {
+				tickAccumulator -= 1.0
+				select {
+				case <-w.closing:
+					w.running.Done()
+					return
+				case <-w.w.Exec(w.Tick):
+				}
 			}
+
 		case <-w.closing:
 			w.running.Done()
 			return
@@ -484,36 +498,46 @@ func (w *Playback) openEntity(tx *world.Tx, id uint32) (*entity.Ent, bool) {
 	return e.(*entity.Ent), true
 }
 
-// Tick ...
+// Tick advances the playback by one tick, either forward or backward depending on the reverse setting.
 func (w *Playback) Tick(tx *world.Tx) {
+	// Check if we should stop processing
 	select {
 	case <-w.closing:
 		return
 	default:
 	}
+
+	// Don't process if paused
 	if w.paused {
 		return
 	}
 
+	// Handle forward playback
 	if !w.reverse {
+		// Check if we've reached the end
 		if w.playbackTick+1 >= w.data.totalTicks {
 			w.ended = true
 			return
 		}
+
+		// Play the next tick and update counter
 		w.playTick(tx, w.playbackTick+1)
 		w.playbackTick++
 		return
 	}
 
+	// Handle reverse playback
+	// Check if we've reached the beginning
 	if w.playbackTick-1 < 0 {
 		return
 	}
 
+	// Play the previous tick and update counter
 	w.reverseTick(tx, w.playbackTick-1)
 	w.playbackTick--
 }
 
-// playTick ...
+// playTick executes all actions for the specified tick and stores reverse handlers.
 func (w *Playback) playTick(tx *world.Tx, tick uint) {
 	actions, ok := w.data.actions[uint32(tick)]
 	if !ok {
@@ -531,7 +555,7 @@ func (w *Playback) playTick(tx *world.Tx, tick uint) {
 	w.reverseHandlers[uint32(tick-1)] = reverseHandlers
 }
 
-// reverseTick ...
+// reverseTick executes the reverse handlers for the specified tick.
 func (w *Playback) reverseTick(tx *world.Tx, tick uint) {
 	reverseHandlers, ok := w.reverseHandlers[uint32(tick)]
 	if !ok {
@@ -546,12 +570,12 @@ func (w *Playback) reverseTick(tx *world.Tx, tick uint) {
 	delete(w.reverseHandlers, uint32(tick))
 }
 
-// Close ...
+// Close stops the playback and releases resources.
 func (w *Playback) Close() {
 	w.once.Do(w.doClose)
 }
 
-// doClose ...
+// doClose handles the actual closing logic.
 func (w *Playback) doClose() {
 	close(w.closing)
 	w.running.Wait()
@@ -582,6 +606,21 @@ func (w *Playback) Resume() {
 // Paused returns true if the playback is paused.
 func (w *Playback) Paused() bool {
 	return w.paused
+}
+
+// Speed returns the current playback speed.
+func (w *Playback) Speed() float64 {
+	return w.speed
+}
+
+// SetSpeed sets the playback speed. A value of 1.0 is normal speed,
+// values greater than 1.0 are faster, and values less than 1.0 are slower.
+// The speed must be greater than 0.
+func (w *Playback) SetSpeed(speed float64) {
+	if speed <= 0 {
+		panic("playback speed must be greater than 0")
+	}
+	w.speed = speed
 }
 
 // FastForward moves the playback forward by the given number of ticks.

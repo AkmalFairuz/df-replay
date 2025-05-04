@@ -107,9 +107,9 @@ func (r *Recorder) CloseAndSaveActions(w io.Writer) error {
 
 // doClose ...
 func (r *Recorder) doCloseAndSaveActions(w io.Writer) error {
+	r.Flush()
 	close(r.closing)
 	r.recording.Wait()
-	r.Flush()
 	if err := r.saveActions(w); err != nil {
 		return err
 	}
@@ -493,7 +493,9 @@ func (r *Recorder) saveActions(w io.Writer) error {
 	if err != nil {
 		return err
 	}
-	defer encoder.Close()
+	defer func() {
+		_ = encoder.Close()
+	}()
 
 	if _, err := encoder.Write(buf.Bytes()); err != nil {
 		return err
