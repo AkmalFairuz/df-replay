@@ -52,7 +52,7 @@ func (h *playerHandler) HandleItemUse(ctx *player.Context) {
 	}
 	switch v.(string) {
 	case "toggle_reverse":
-		h.p.SetReverse(!h.p.IsReverse())
-		ctx.Val().Messagef("reverse: %v", h.p.IsReverse())
+		h.p.SetReverse(!h.p.Reversed())
+		ctx.Val().Messagef("reverse: %v", h.p.Reversed())
 	}
 }

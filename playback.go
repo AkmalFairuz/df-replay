@@ -500,21 +500,7 @@ func (w *Playback) Tick(tx *world.Tx) {
 			w.ended = true
 			return
 		}
-		actions, ok := w.data.actions[uint32(w.playbackTick)]
-		if !ok {
-			w.playbackTick++
-			return
-		}
-		reverseHandlers := make([]func(ctx *action.PlayContext), 0, len(actions))
-		for _, a := range actions {
-			playCtx := action.NewPlayContext(tx, w)
-			a.Play(playCtx)
-			reverseHandler, hasReverseHandler := playCtx.ReverseHandler()
-			if hasReverseHandler {
-				reverseHandlers = append(reverseHandlers, reverseHandler)
-			}
-		}
-		w.reverseHandlers[uint32(w.playbackTick)] = reverseHandlers
+		w.playTick(tx, w.playbackTick+1)
 		w.playbackTick++
 		return
 	}
@@ -523,17 +509,41 @@ func (w *Playback) Tick(tx *world.Tx) {
 		return
 	}
 
-	reverseHandlers, ok := w.reverseHandlers[uint32(w.playbackTick)]
+	w.reverseTick(tx, w.playbackTick-1)
+	w.playbackTick--
+}
+
+// playTick ...
+func (w *Playback) playTick(tx *world.Tx, tick uint) {
+	actions, ok := w.data.actions[uint32(tick)]
 	if !ok {
-		w.playbackTick--
 		return
 	}
+	reverseHandlers := make([]func(ctx *action.PlayContext), 0, len(actions))
+	for _, a := range actions {
+		playCtx := action.NewPlayContext(tx, w)
+		a.Play(playCtx)
+		reverseHandler, hasReverseHandler := playCtx.ReverseHandler()
+		if hasReverseHandler {
+			reverseHandlers = append(reverseHandlers, reverseHandler)
+		}
+	}
+	w.reverseHandlers[uint32(tick-1)] = reverseHandlers
+}
+
+// reverseTick ...
+func (w *Playback) reverseTick(tx *world.Tx, tick uint) {
+	reverseHandlers, ok := w.reverseHandlers[uint32(tick)]
+	if !ok {
+		return
+	}
+
 	for _, h := range reverseHandlers {
 		playCtx := action.NewPlayContext(tx, w)
 		h(playCtx)
 	}
-	delete(w.reverseHandlers, uint32(w.playbackTick))
-	w.playbackTick--
+
+	delete(w.reverseHandlers, uint32(tick))
 }
 
 // Close ...
@@ -548,8 +558,8 @@ func (w *Playback) doClose() {
 	w.closed.Store(true)
 }
 
-// IsReverse returns true if the playback is in reverse.
-func (w *Playback) IsReverse() bool {
+// Reversed returns true if the playback is in reverse.
+func (w *Playback) Reversed() bool {
 	return w.reverse
 }
 
@@ -557,4 +567,54 @@ func (w *Playback) IsReverse() bool {
 // will play backwards. If false, the playback will play forwards.
 func (w *Playback) SetReverse(reverse bool) {
 	w.reverse = reverse
+}
+
+// Pause pauses the playback.
+func (w *Playback) Pause() {
+	w.paused = true
+}
+
+// Resume resumes the playback.
+func (w *Playback) Resume() {
+	w.paused = false
+}
+
+// Paused returns true if the playback is paused.
+func (w *Playback) Paused() bool {
+	return w.paused
+}
+
+// FastForward moves the playback forward by the given number of ticks.
+func (w *Playback) FastForward(tx *world.Tx, ticks uint) {
+	untilTick := min(w.playbackTick+ticks, w.data.totalTicks-1)
+
+	for i := w.playbackTick + 1; i < untilTick; i++ {
+		w.playTick(tx, i)
+		w.playbackTick++
+	}
+}
+
+// Rewind moves the playback backward by the given number of ticks.
+func (w *Playback) Rewind(tx *world.Tx, ticks uint) {
+	untilTick := max(w.playbackTick-ticks, 0)
+
+	for i := w.playbackTick - 1; i > untilTick; i-- {
+		w.reverseTick(tx, i)
+		w.playbackTick--
+	}
+}
+
+// PlaybackTick returns the current tick of the playback.
+func (w *Playback) PlaybackTick() uint {
+	return w.playbackTick
+}
+
+// MaxPlaybackTick returns the maximum tick of the playback.
+func (w *Playback) MaxPlaybackTick() uint {
+	return w.data.totalTicks - 1
+}
+
+// Duration returns the duration of the playback.
+func (w *Playback) Duration() time.Duration {
+	return time.Duration(w.data.totalTicks) * time.Second / 20
 }
