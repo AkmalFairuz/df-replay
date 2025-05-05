@@ -17,6 +17,7 @@ func (a *PlayerArmorChange) ID() uint8 {
 }
 
 func (a *PlayerArmorChange) Marshal(io protocol.IO) {
+	io.Varuint32(&a.PlayerID)
 	protocol.Single(io, &a.Helmet)
 	protocol.Single(io, &a.Chestplate)
 	protocol.Single(io, &a.Leggings)
