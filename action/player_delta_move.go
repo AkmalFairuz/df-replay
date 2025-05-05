@@ -46,7 +46,7 @@ func (a *PlayerDeltaMove) HasPitch() bool {
 
 func (a *PlayerDeltaMove) Marshal(io protocol.IO) {
 	io.Uint8(&a.Flags)
-	io.Uint32(&a.PlayerID)
+	io.Varuint32(&a.PlayerID)
 	if a.HasX() {
 		io.Float32(&a.Position[0])
 	} else {
