@@ -31,6 +31,7 @@ var (
 		IDEntityNameTagUpdate: func() Action { return &EntityNameTagUpdate{} },
 		IDSetLiquid:           func() Action { return &SetLiquid{} },
 		IDChestUpdate:         func() Action { return &ChestUpdate{} },
+		IDPlayerDeltaMove:     func() Action { return &PlayerDeltaMove{} },
 	}
 )
 

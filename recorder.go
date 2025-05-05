@@ -12,6 +12,7 @@ import (
 	"github.com/df-mc/dragonfly/server/player/skin"
 	"github.com/df-mc/dragonfly/server/session"
 	"github.com/df-mc/dragonfly/server/world"
+	"github.com/go-gl/mathgl/mgl32"
 	"github.com/go-gl/mathgl/mgl64"
 	"github.com/google/uuid"
 	"github.com/klauspost/compress/zstd"
@@ -41,6 +42,8 @@ type Recorder struct {
 	recording sync.WaitGroup
 	closing   chan struct{}
 	once      sync.Once
+
+	lastPushedPlayerMovements map[uuid.UUID]mgl64.Vec3
 
 	entityMovementRecorder *WorldEntityMovementRecorder
 }
@@ -277,12 +280,50 @@ func (r *Recorder) PushPlayerMovement(p *player.Player, pos mgl64.Vec3, rot cube
 		return
 	}
 
-	r.PushAction(&action.PlayerMove{
-		PlayerID: playerID,
-		Position: vec64To32(pos),
-		Yaw:      action.EncodeYaw16(float32(rot[0])),
-		Pitch:    action.EncodePitch16(float32(rot[1])),
-	})
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	if lastPos, ok := r.lastPushedPlayerMovements[p.UUID()]; ok {
+		flags := uint8(0)
+		var changedPos mgl32.Vec3
+		var yaw, pitch uint16
+		if pos[0] != lastPos[0] {
+			flags |= action.PlayerDeltaMoveHasXFlag
+			changedPos[0] = float32(pos[0])
+		}
+		if pos[1] != lastPos[1] {
+			flags |= action.PlayerDeltaMoveHasYFlag
+			changedPos[1] = float32(pos[1])
+		}
+		if pos[2] != lastPos[2] {
+			flags |= action.PlayerDeltaMoveHasZFlag
+			changedPos[2] = float32(pos[2])
+		}
+		if rot[0] != lastPos[0] {
+			flags |= action.PlayerDeltaMoveHasYawFlag
+			yaw = action.EncodeYaw16(float32(rot[0]))
+		}
+		if rot[1] != lastPos[1] {
+			flags |= action.PlayerDeltaMoveHasPitchFlag
+			pitch = action.EncodePitch16(float32(rot[1]))
+		}
+
+		r.pushActionNoMutex(&action.PlayerDeltaMove{
+			Flags:    flags,
+			PlayerID: playerID,
+			Position: changedPos,
+			Yaw:      yaw,
+			Pitch:    pitch,
+		})
+	} else {
+		r.pushActionNoMutex(&action.PlayerMove{
+			PlayerID: playerID,
+			Position: vec64To32(pos),
+			Yaw:      action.EncodeYaw16(float32(rot[0])),
+			Pitch:    action.EncodePitch16(float32(rot[1])),
+		})
+	}
+	r.lastPushedPlayerMovements[p.UUID()] = pos
 }
 
 // PushEntityMovement ...
@@ -481,6 +522,11 @@ func (r *Recorder) PushAction(a action.Action) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
+	r.pushActionNoMutex(a)
+}
+
+// pushActionNoMutex pushes an action to the recorder without locking the mutex.
+func (r *Recorder) pushActionNoMutex(a action.Action) {
 	if _, ok := r.pendingActions[r.tick]; !ok {
 		r.pendingActions[r.tick] = make([]action.Action, 0, 4)
 	}
