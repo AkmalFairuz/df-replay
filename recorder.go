@@ -51,14 +51,15 @@ type Recorder struct {
 // NewRecorder creates a new recorder, returning a pointer to the recorder.
 func NewRecorder(id uuid.UUID) *Recorder {
 	return &Recorder{
-		id:             id,
-		nextID:         1,
-		buffer:         bytes.NewBuffer(make([]byte, 0, 8192)), // 8KB
-		pendingActions: make(map[uint32][]action.Action, 512),
-		closing:        make(chan struct{}),
-		playerIDs:      make(map[uuid.UUID]uint32, 32),
-		entityIDs:      make(map[uuid.UUID]uint32, 32),
-		tick:           1,
+		id:                        id,
+		nextID:                    1,
+		buffer:                    bytes.NewBuffer(make([]byte, 0, 8192)), // 8KB
+		pendingActions:            make(map[uint32][]action.Action, 6000), // 5 minutes
+		closing:                   make(chan struct{}),
+		playerIDs:                 make(map[uuid.UUID]uint32, 32),
+		entityIDs:                 make(map[uuid.UUID]uint32, 32),
+		lastPushedPlayerMovements: make(map[uuid.UUID]mgl64.Vec3, 32),
+		tick:                      1,
 	}
 }
 
