@@ -460,6 +460,14 @@ func (r *Recorder) PushSetEntityNameTag(e world.Entity, nameTag string) {
 	})
 }
 
+// PushChestUpdate ...
+func (r *Recorder) PushChestUpdate(pos cube.Pos, open bool) {
+	r.PushAction(&action.ChestUpdate{
+		Position: cubeToBlockPos(pos),
+		Open:     open,
+	})
+}
+
 // EncodeItem ...
 func (r *Recorder) EncodeItem(s item.Stack) action.Item {
 	return action.Item{
