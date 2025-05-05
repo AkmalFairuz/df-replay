@@ -14,7 +14,7 @@ func (a *EntityNameTagUpdate) ID() uint8 {
 }
 
 func (a *EntityNameTagUpdate) Marshal(io protocol.IO) {
-	io.Uint32(&a.EntityID)
+	io.Varuint32(&a.EntityID)
 	io.String(&a.NameTag)
 }
 

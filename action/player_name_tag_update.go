@@ -14,7 +14,7 @@ func (a *PlayerNameTagUpdate) ID() uint8 {
 }
 
 func (a *PlayerNameTagUpdate) Marshal(io protocol.IO) {
-	io.Uint32(&a.PlayerID)
+	io.Varuint32(&a.PlayerID)
 	io.String(&a.NameTag)
 }
 

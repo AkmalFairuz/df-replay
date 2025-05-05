@@ -24,7 +24,7 @@ func (a *PlayerSkin) ID() uint8 {
 }
 
 func (a *PlayerSkin) Marshal(io protocol.IO) {
-	io.Uint32(&a.PlayerID)
+	io.Varuint32(&a.PlayerID)
 	io.Uint32(&a.SkinWidth)
 	io.Uint32(&a.SkinHeight)
 	io.ByteSlice(&a.SkinData)
