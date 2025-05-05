@@ -200,7 +200,7 @@ func (r *Recorder) AddEntity(e world.Entity) {
 
 // RemoveEntity ...
 func (r *Recorder) RemoveEntity(e world.Entity) {
-	entityID := r.entityID(e)
+	entityID := r.EntityID(e)
 	if entityID == 0 {
 		return
 	}
@@ -210,8 +210,8 @@ func (r *Recorder) RemoveEntity(e world.Entity) {
 	})
 }
 
-// playerID ...
-func (r *Recorder) playerID(p *player.Player) uint32 {
+// PlayerID ...
+func (r *Recorder) PlayerID(p *player.Player) uint32 {
 	r.mu.Lock()
 	playerID, ok := r.playerIDs[p.UUID()]
 	r.mu.Unlock()
@@ -222,8 +222,20 @@ func (r *Recorder) playerID(p *player.Player) uint32 {
 	return playerID
 }
 
-// entityID ...
-func (r *Recorder) entityID(e world.Entity) uint32 {
+// PlayerIDByHandle ...
+func (r *Recorder) PlayerIDByHandle(h *world.EntityHandle) uint32 {
+	r.mu.Lock()
+	playerID, ok := r.playerIDs[h.UUID()]
+	r.mu.Unlock()
+
+	if !ok {
+		return 0
+	}
+	return playerID
+}
+
+// EntityID ...
+func (r *Recorder) EntityID(e world.Entity) uint32 {
 	r.mu.Lock()
 	entityID, ok := r.entityIDs[e.H().UUID()]
 	r.mu.Unlock()
@@ -234,9 +246,21 @@ func (r *Recorder) entityID(e world.Entity) uint32 {
 	return entityID
 }
 
+// EntityIDByHandle ...
+func (r *Recorder) EntityIDByHandle(h *world.EntityHandle) uint32 {
+	r.mu.Lock()
+	entityID, ok := r.entityIDs[h.UUID()]
+	r.mu.Unlock()
+
+	if !ok {
+		return 0
+	}
+	return entityID
+}
+
 // RemovePlayer ...
 func (r *Recorder) RemovePlayer(p *player.Player) {
-	playerID := r.playerID(p)
+	playerID := r.PlayerID(p)
 	if playerID == 0 {
 		return
 	}
@@ -248,7 +272,7 @@ func (r *Recorder) RemovePlayer(p *player.Player) {
 
 // PushPlayerMovement ...
 func (r *Recorder) PushPlayerMovement(p *player.Player, pos mgl64.Vec3, rot cube.Rotation) {
-	playerID := r.playerID(p)
+	playerID := r.PlayerID(p)
 	if playerID == 0 {
 		return
 	}
@@ -263,7 +287,7 @@ func (r *Recorder) PushPlayerMovement(p *player.Player, pos mgl64.Vec3, rot cube
 
 // PushEntityMovement ...
 func (r *Recorder) PushEntityMovement(e world.Entity, pos mgl64.Vec3, rot cube.Rotation) {
-	entityID := r.entityID(e)
+	entityID := r.EntityID(e)
 	if entityID == 0 {
 		return
 	}
@@ -278,7 +302,7 @@ func (r *Recorder) PushEntityMovement(e world.Entity, pos mgl64.Vec3, rot cube.R
 
 // PushPlayerHandChange ...
 func (r *Recorder) PushPlayerHandChange(p *player.Player, mainHand, offHand item.Stack) {
-	playerID := r.playerID(p)
+	playerID := r.PlayerID(p)
 	if playerID == 0 {
 		return
 	}
@@ -292,7 +316,7 @@ func (r *Recorder) PushPlayerHandChange(p *player.Player, mainHand, offHand item
 
 // PushPlayerSwingArm ...
 func (r *Recorder) PushPlayerSwingArm(p *player.Player) {
-	playerID := r.playerID(p)
+	playerID := r.PlayerID(p)
 	if playerID == 0 {
 		return
 	}
@@ -305,7 +329,7 @@ func (r *Recorder) PushPlayerSwingArm(p *player.Player) {
 
 // PushPlayerUsingItem ...
 func (r *Recorder) PushPlayerUsingItem(p *player.Player, usingItem bool) {
-	playerID := r.playerID(p)
+	playerID := r.PlayerID(p)
 	if playerID == 0 {
 		return
 	}
@@ -325,7 +349,7 @@ func (r *Recorder) PushPlayerUsingItem(p *player.Player, usingItem bool) {
 
 // PushPlayerEating ...
 func (r *Recorder) PushPlayerEating(p *player.Player) {
-	playerID := r.playerID(p)
+	playerID := r.PlayerID(p)
 	if playerID == 0 {
 		return
 	}
@@ -338,7 +362,7 @@ func (r *Recorder) PushPlayerEating(p *player.Player) {
 
 // PushPlayerSneaking ...
 func (r *Recorder) PushPlayerSneaking(p *player.Player, sneaking bool) {
-	playerID := r.playerID(p)
+	playerID := r.PlayerID(p)
 	if playerID == 0 {
 		return
 	}
@@ -358,7 +382,7 @@ func (r *Recorder) PushPlayerSneaking(p *player.Player, sneaking bool) {
 
 // PushPlayerHurt ...
 func (r *Recorder) PushPlayerHurt(p *player.Player) {
-	playerID := r.playerID(p)
+	playerID := r.PlayerID(p)
 	if playerID == 0 {
 		return
 	}
@@ -394,7 +418,7 @@ func (r *Recorder) PushSetBlock(pos cube.Pos, b world.Block) {
 
 // PushSkinChange ...
 func (r *Recorder) PushSkinChange(p *player.Player, sk skin.Skin) {
-	playerID := r.playerID(p)
+	playerID := r.PlayerID(p)
 	if playerID == 0 {
 		return
 	}
@@ -412,7 +436,7 @@ func (r *Recorder) PushSetLiquid(pos cube.Pos, l world.Liquid) {
 
 // PushSetPlayerNameTag ...
 func (r *Recorder) PushSetPlayerNameTag(p *player.Player, nameTag string) {
-	playerID := r.playerID(p)
+	playerID := r.PlayerID(p)
 	if playerID == 0 {
 		return
 	}
@@ -425,7 +449,7 @@ func (r *Recorder) PushSetPlayerNameTag(p *player.Player, nameTag string) {
 
 // PushSetEntityNameTag ...
 func (r *Recorder) PushSetEntityNameTag(e world.Entity, nameTag string) {
-	entityID := r.entityID(e)
+	entityID := r.EntityID(e)
 	if entityID == 0 {
 		return
 	}
@@ -434,6 +458,14 @@ func (r *Recorder) PushSetEntityNameTag(e world.Entity, nameTag string) {
 		EntityID: entityID,
 		NameTag:  nameTag,
 	})
+}
+
+// EncodeItem ...
+func (r *Recorder) EncodeItem(s item.Stack) action.Item {
+	return action.Item{
+		Hash:       internal.ItemToHash(s.Item()),
+		HasEnchant: len(s.Enchantments()) > 0,
+	}
 }
 
 // PushAction pushes an action to the recorder, to be written to the buffer at a later time.
