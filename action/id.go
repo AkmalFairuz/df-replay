@@ -18,4 +18,5 @@ const (
 	IDPlayerNameTagUpdate
 	IDEntityNameTagUpdate
 	IDSetLiquid
+	IDChestUpdate
 )

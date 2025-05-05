@@ -30,6 +30,7 @@ var (
 		IDPlayerNameTagUpdate: func() Action { return &PlayerNameTagUpdate{} },
 		IDEntityNameTagUpdate: func() Action { return &EntityNameTagUpdate{} },
 		IDSetLiquid:           func() Action { return &SetLiquid{} },
+		IDChestUpdate:         func() Action { return &ChestUpdate{} },
 	}
 )
 

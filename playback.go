@@ -2,6 +2,7 @@ package replay
 
 import (
 	"github.com/akmalfairuz/df-replay/action"
+	"github.com/df-mc/dragonfly/server/block"
 	"github.com/df-mc/dragonfly/server/block/cube"
 	"github.com/df-mc/dragonfly/server/entity"
 	"github.com/df-mc/dragonfly/server/item"
@@ -37,6 +38,7 @@ type Playback struct {
 	entities        map[uint32]*Entity
 	skins           map[uint32]skin.Skin
 	reverseHandlers map[uint32][]func(ctx *action.PlayContext)
+	chestState      map[cube.Pos]bool
 }
 
 // Compile time check to ensure that Playback implements action.Playback.
@@ -53,6 +55,7 @@ func NewPlayback(w *world.World, data *Data) *Playback {
 		reverseHandlers: make(map[uint32][]func(ctx *action.PlayContext)),
 		closing:         make(chan struct{}),
 		speed:           1.0,
+		chestState:      make(map[cube.Pos]bool, 16),
 	}
 }
 
@@ -92,6 +95,24 @@ func (w *Playback) doTicking() {
 			return
 		}
 	}
+}
+
+func (w *Playback) UpdateChestState(tx *world.Tx, pos cube.Pos, open bool) {
+	w.chestState[pos] = open
+	for _, v := range tx.Viewers(pos.Vec3Centre()) {
+		if open {
+			v.ViewBlockAction(pos, block.OpenAction{})
+		} else {
+			v.ViewBlockAction(pos, block.CloseAction{})
+		}
+	}
+}
+
+func (w *Playback) ChestState(_ *world.Tx, pos cube.Pos) bool {
+	if open, ok := w.chestState[pos]; ok {
+		return open
+	}
+	return false
 }
 
 func (w *Playback) Liquid(tx *world.Tx, pos cube.Pos) (world.Liquid, bool) {

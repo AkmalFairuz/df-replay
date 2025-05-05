@@ -45,4 +45,6 @@ type Playback interface {
 	SetEntityNameTag(tx *world.Tx, id uint32, nameTag string)
 	Liquid(tx *world.Tx, pos cube.Pos) (world.Liquid, bool)
 	SetLiquid(tx *world.Tx, pos cube.Pos, l world.Liquid)
+	UpdateChestState(tx *world.Tx, pos cube.Pos, open bool)
+	ChestState(tx *world.Tx, pos cube.Pos) bool
 }
