@@ -549,12 +549,12 @@ func (w *Playback) Tick(tx *world.Tx) {
 
 	// Handle reverse playback
 	// Check if we've reached the beginning
-	if w.playbackTick-1 < 0 {
+	if int(w.playbackTick)-1 < 0 {
 		return
 	}
 
 	// Play the previous tick and update counter
-	w.reverseTick(tx, w.playbackTick-1)
+	w.reverseTick(tx, w.playbackTick)
 	w.playbackTick--
 }
 
