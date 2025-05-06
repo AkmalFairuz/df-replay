@@ -646,8 +646,8 @@ func (w *Playback) SetSpeed(speed float64) {
 }
 
 // FastForward moves the playback forward by the given number of ticks.
-func (w *Playback) FastForward(tx *world.Tx, ticks uint) {
-	untilTick := min(w.playbackTick+ticks, w.data.totalTicks)
+func (w *Playback) FastForward(tx *world.Tx, ticks int) {
+	untilTick := uint(min(int(w.playbackTick)+ticks, int(w.data.totalTicks)))
 
 	for i := w.playbackTick + 1; i < untilTick; i++ {
 		w.playTick(tx, i)
@@ -656,8 +656,8 @@ func (w *Playback) FastForward(tx *world.Tx, ticks uint) {
 }
 
 // Rewind moves the playback backward by the given number of ticks.
-func (w *Playback) Rewind(tx *world.Tx, ticks uint) {
-	untilTick := max(w.playbackTick-ticks, 0)
+func (w *Playback) Rewind(tx *world.Tx, ticks int) {
+	untilTick := uint(max(int(w.playbackTick)-ticks, 0))
 
 	for i := w.playbackTick - 1; i > untilTick; i-- {
 		w.reverseTick(tx, i)
@@ -666,13 +666,13 @@ func (w *Playback) Rewind(tx *world.Tx, ticks uint) {
 }
 
 // PlaybackTick returns the current tick of the playback.
-func (w *Playback) PlaybackTick() uint {
-	return w.playbackTick
+func (w *Playback) PlaybackTick() int {
+	return int(w.playbackTick)
 }
 
 // MaxPlaybackTick returns the maximum tick of the playback.
-func (w *Playback) MaxPlaybackTick() uint {
-	return w.data.totalTicks - 1
+func (w *Playback) MaxPlaybackTick() int {
+	return int(w.data.totalTicks) - 1
 }
 
 // Duration returns the duration of the playback.
