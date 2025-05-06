@@ -44,6 +44,7 @@ type Recorder struct {
 	once      sync.Once
 
 	lastPushedPlayerMovements map[uuid.UUID]mgl64.Vec3
+	lastPushedEntityMovements map[uuid.UUID]mgl64.Vec3
 
 	entityMovementRecorder *WorldEntityMovementRecorder
 }
@@ -59,6 +60,7 @@ func NewRecorder(id uuid.UUID) *Recorder {
 		playerIDs:                 make(map[uuid.UUID]uint32, 32),
 		entityIDs:                 make(map[uuid.UUID]uint32, 32),
 		lastPushedPlayerMovements: make(map[uuid.UUID]mgl64.Vec3, 32),
+		lastPushedEntityMovements: make(map[uuid.UUID]mgl64.Vec3, 32),
 		tick:                      1,
 	}
 }
@@ -300,11 +302,13 @@ func (r *Recorder) PushPlayerMovement(p *player.Player, pos mgl64.Vec3, rot cube
 			flags |= action.PlayerDeltaMoveHasZFlag
 			changedPos[2] = float32(pos[2])
 		}
-		if rot[0] != lastPos[0] {
+
+		prevRot := p.Rotation()
+		if rot[0] != prevRot[0] {
 			flags |= action.PlayerDeltaMoveHasYawFlag
 			yaw = action.EncodeYaw16(float32(rot[0]))
 		}
-		if rot[1] != lastPos[1] {
+		if rot[1] != prevRot[1] {
 			flags |= action.PlayerDeltaMoveHasPitchFlag
 			pitch = action.EncodePitch16(float32(rot[1]))
 		}
@@ -334,12 +338,52 @@ func (r *Recorder) PushEntityMovement(e world.Entity, pos mgl64.Vec3, rot cube.R
 		return
 	}
 
-	r.PushAction(&action.EntityMove{
-		EntityID: entityID,
-		Position: vec64To32(pos),
-		Yaw:      action.EncodeYaw16(float32(rot[0])),
-		Pitch:    action.EncodePitch16(float32(rot[1])),
-	})
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	if lastPos, ok := r.lastPushedEntityMovements[e.H().UUID()]; ok {
+		flags := uint8(0)
+		var changedPos mgl32.Vec3
+		var yaw, pitch uint16
+		if pos[0] != lastPos[0] {
+			flags |= action.EntityDeltaMoveHasXFlag
+			changedPos[0] = float32(pos[0])
+		}
+		if pos[1] != lastPos[1] {
+			flags |= action.EntityDeltaMoveHasYFlag
+			changedPos[1] = float32(pos[1])
+		}
+		if pos[2] != lastPos[2] {
+			flags |= action.EntityDeltaMoveHasZFlag
+			changedPos[2] = float32(pos[2])
+		}
+
+		prevRot := e.Rotation()
+		if rot[0] != prevRot[0] {
+			flags |= action.EntityDeltaMoveHasYawFlag
+			yaw = action.EncodeYaw16(float32(rot[0]))
+		}
+		if rot[1] != prevRot[1] {
+			flags |= action.EntityDeltaMoveHasPitchFlag
+			pitch = action.EncodePitch16(float32(rot[1]))
+		}
+
+		r.pushActionNoMutex(&action.EntityDeltaMove{
+			Flags:    flags,
+			EntityID: entityID,
+			Position: changedPos,
+			Yaw:      yaw,
+			Pitch:    pitch,
+		})
+	} else {
+		r.pushActionNoMutex(&action.EntityMove{
+			EntityID: entityID,
+			Position: vec64To32(pos),
+			Yaw:      action.EncodeYaw16(float32(rot[0])),
+			Pitch:    action.EncodePitch16(float32(rot[1])),
+		})
+	}
+	r.lastPushedEntityMovements[e.H().UUID()] = pos
 }
 
 // PushPlayerHandChange ...

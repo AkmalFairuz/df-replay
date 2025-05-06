@@ -20,4 +20,5 @@ const (
 	IDSetLiquid
 	IDChestUpdate
 	IDPlayerDeltaMove
+	IDEntityDeltaMove
 )
