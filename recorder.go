@@ -570,6 +570,13 @@ func (r *Recorder) PushAction(a action.Action) {
 	r.pushActionNoMutex(a)
 }
 
+// removeLastEntityMovement removes the last entity movement from the recorder.
+func (r *Recorder) removeLastEntityMovement(e world.Entity) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	delete(r.lastPushedEntityMovements, e.H().UUID())
+}
+
 // pushActionNoMutex pushes an action to the recorder without locking the mutex.
 func (r *Recorder) pushActionNoMutex(a action.Action) {
 	if _, ok := r.pendingActions[r.tick]; !ok {
