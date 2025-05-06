@@ -11,7 +11,6 @@ import (
 	"github.com/df-mc/dragonfly/server/player/skin"
 	"github.com/df-mc/dragonfly/server/world"
 	"github.com/go-gl/mathgl/mgl64"
-	"iter"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -681,12 +680,21 @@ func (w *Playback) Duration() time.Duration {
 }
 
 // Players ...
-func (w *Playback) Players() iter.Seq[*Player] {
-	return func(yield func(*Player) bool) {
-		for _, p := range w.players {
-			if !yield(p) {
-				break
-			}
+func (w *Playback) Players() []*Player {
+	ret := make([]*Player, 0, len(w.players))
+	for _, p := range w.players {
+		ret = append(ret, p)
+	}
+	return ret
+}
+
+// PlayerByName returns a player by its name. If the player does not exist,
+// the second return value will be false.
+func (w *Playback) PlayerByName(name string) (*Player, bool) {
+	for _, p := range w.players {
+		if p.Name() == name {
+			return p, true
 		}
 	}
+	return nil, false
 }
