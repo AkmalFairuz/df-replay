@@ -47,7 +47,7 @@ func (packetHandler) HandleServerPacket(ctx *intercept.Context, pk packet.Packet
 			return
 		}
 		if _, isTextType := data.extraData["IsTextType"]; isTextType {
-			pk.EntityMetadata[protocol.EntityDataKeyVariant] = world.BlockRuntimeID(block.Air{})
+			pk.EntityMetadata[protocol.EntityDataKeyVariant] = int32(world.BlockRuntimeID(block.Air{}))
 		}
 		pk.EntityType = data.identifier
 	}
