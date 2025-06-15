@@ -155,6 +155,9 @@ func (w *Playback) EntityNameTag(tx *world.Tx, id uint32) string {
 }
 
 func (w *Playback) SpawnEntity(tx *world.Tx, id uint32, identifier, nameTag string, pos mgl64.Vec3, rot cube.Rotation, extraData map[string]any) {
+	if _, ok := w.openEntity(tx, id); ok {
+		return
+	}
 	opts := &world.EntitySpawnOpts{
 		Position: pos,
 		Rotation: rot,
@@ -333,6 +336,9 @@ func (w *Playback) SetBlock(tx *world.Tx, pos cube.Pos, b world.Block) {
 }
 
 func (w *Playback) SpawnPlayer(tx *world.Tx, username, nameTag string, id uint32, pos mgl64.Vec3, rot cube.Rotation, armour [4]item.Stack, heldItems [2]item.Stack) {
+	if _, ok := w.openPlayer(tx, id); ok {
+		return
+	}
 	opts := &world.EntitySpawnOpts{
 		Position: pos,
 		Rotation: rot,

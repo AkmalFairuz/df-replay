@@ -147,7 +147,6 @@ func (r *Recorder) AddPlayer(p *player.Player) {
 	}
 
 	mainHand, offHand := p.HeldItems()
-
 	r.PushAction(&action.PlayerSpawn{
 		PlayerID:   playerID,
 		PlayerName: p.Name(),
