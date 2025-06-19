@@ -2,7 +2,6 @@ package replay
 
 import (
 	"github.com/akmalfairuz/df-replay/action"
-	"github.com/bedrock-gophers/intercept/intercept"
 	"github.com/df-mc/dragonfly/server/block"
 	"github.com/df-mc/dragonfly/server/block/cube"
 	"github.com/df-mc/dragonfly/server/entity"
