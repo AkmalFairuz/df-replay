@@ -62,6 +62,16 @@ func getSessionByHandle(h *world.EntityHandle) *session.Session {
 	return reflect.NewAt(rs.Type(), unsafe.Pointer(rs.UnsafeAddr())).Elem().Interface().(*session.Session)
 }
 
+// getConnBySession returns the session.Conn of a player by its entity handle.
+func getConnBySession(s *session.Session) session.Conn {
+	// detect venity fork
+	if v, ok := toAny(s).(interface{ Conn() session.Conn }); ok {
+		return v.Conn()
+	}
+	rf := reflect.ValueOf(s).Elem().FieldByName("conn")
+	return reflect.NewAt(rf.Type(), unsafe.Pointer(rf.UnsafeAddr())).Elem().Interface().(session.Conn)
+}
+
 // getEntityHandleData ...
 func getEntityHandleData(h *world.EntityHandle, field string) any {
 	rf := reflect.ValueOf(h).Elem().FieldByName("data")
