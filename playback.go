@@ -662,10 +662,16 @@ func (w *Playback) FastForward(tx *world.Tx, ticks int) {
 
 // Rewind moves the playback backward by the given number of ticks.
 func (w *Playback) Rewind(tx *world.Tx, ticks int) {
+	if w.playbackTick == 0 {
+		return
+	}
 	untilTick := uint(max(int(w.playbackTick)-ticks, 0))
 
 	for i := w.playbackTick - 1; i > untilTick; i-- {
 		w.reverseTick(tx, i)
+		if w.playbackTick == 0 {
+			break
+		}
 		w.playbackTick--
 	}
 }
