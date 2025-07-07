@@ -555,10 +555,7 @@ func (r *Recorder) PushChestUpdate(pos cube.Pos, open bool) {
 
 // EncodeItem ...
 func (r *Recorder) EncodeItem(s item.Stack) action.Item {
-	return action.Item{
-		Hash:       internal.ItemToHash(s.Item()),
-		HasEnchant: len(s.Enchantments()) > 0,
-	}
+	return action.ItemFromStack(s)
 }
 
 // PushAction pushes an action to the recorder, to be written to the buffer at a later time.
