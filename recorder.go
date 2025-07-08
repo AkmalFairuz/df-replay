@@ -481,8 +481,8 @@ func (r *Recorder) PushPlayerHurt(p *player.Player) {
 // PushPlaceBlock ...
 func (r *Recorder) PushPlaceBlock(pos cube.Pos, b world.Block) {
 	r.PushAction(&action.PlaceBlock{
-		Position:  cubeToBlockPos(pos),
-		BlockHash: internal.BlockToHash(b),
+		Position: cubeToBlockPos(pos),
+		Block:    action.FromBlock(b),
 	})
 }
 
@@ -496,8 +496,8 @@ func (r *Recorder) PushBreakBlock(pos cube.Pos) {
 // PushSetBlock ...
 func (r *Recorder) PushSetBlock(pos cube.Pos, b world.Block) {
 	r.PushAction(&action.SetBlock{
-		Position:  cubeToBlockPos(pos),
-		BlockHash: internal.BlockToHash(b),
+		Position: cubeToBlockPos(pos),
+		Block:    action.FromBlock(b),
 	})
 }
 
