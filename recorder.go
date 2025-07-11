@@ -289,25 +289,25 @@ func (r *Recorder) PushPlayerMovement(p *player.Player, pos mgl64.Vec3, rot cube
 		flags := uint8(0)
 		var changedPos mgl32.Vec3
 		var yaw, pitch uint16
-		if pos[0] != lastPos[0] {
+		if !mgl64.FloatEqual(pos[0], lastPos[0]) {
 			flags |= action.PlayerDeltaMoveHasXFlag
 			changedPos[0] = float32(pos[0])
 		}
-		if pos[1] != lastPos[1] {
+		if !mgl64.FloatEqual(pos[1], lastPos[1]) {
 			flags |= action.PlayerDeltaMoveHasYFlag
 			changedPos[1] = float32(pos[1])
 		}
-		if pos[2] != lastPos[2] {
+		if !mgl64.FloatEqual(pos[2], lastPos[2]) {
 			flags |= action.PlayerDeltaMoveHasZFlag
 			changedPos[2] = float32(pos[2])
 		}
 
 		prevRot := p.Rotation()
-		if rot[0] != prevRot[0] {
+		if !mgl64.FloatEqual(rot[0], prevRot[0]) {
 			flags |= action.PlayerDeltaMoveHasYawFlag
 			yaw = action.EncodeYaw16(float32(rot[0]))
 		}
-		if rot[1] != prevRot[1] {
+		if !mgl64.FloatEqual(rot[1], prevRot[1]) {
 			flags |= action.PlayerDeltaMoveHasPitchFlag
 			pitch = action.EncodePitch16(float32(rot[1]))
 		}
