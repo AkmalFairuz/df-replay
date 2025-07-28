@@ -621,7 +621,11 @@ func (r *Recorder) doFlush(closing bool) {
 
 // saveActions ...
 func (r *Recorder) saveActions(w io.Writer) error {
-	buf := bytes.NewBuffer(nil)
+	buf := internal.BufferPool.Get().(*bytes.Buffer)
+	defer func() {
+		buf.Reset()
+		internal.BufferPool.Put(buf)
+	}()
 	r.mu.Lock()
 	if err := binary.Write(buf, binary.LittleEndian, uint32(r.bufferTickLen)); err != nil {
 		return err

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/akmalfairuz/df-replay/action"
+	"github.com/akmalfairuz/df-replay/internal"
 	"github.com/google/uuid"
 	"github.com/klauspost/compress/zstd"
 	"github.com/sandertv/gophertunnel/minecraft/protocol"
@@ -29,7 +30,11 @@ func (d *Data) LoadActions(r io.Reader) error {
 	}
 	defer decoder.Close()
 
-	buffer := bytes.NewBuffer(make([]byte, 0, 8192)) // 8KB
+	buffer := internal.BufferPool.Get().(*bytes.Buffer)
+	defer func() {
+		buffer.Reset()
+		internal.BufferPool.Put(buffer)
+	}()
 	_, err = io.Copy(buffer, decoder)
 	if err != nil {
 		return fmt.Errorf("failed to copy decompressed data: %w", err)
