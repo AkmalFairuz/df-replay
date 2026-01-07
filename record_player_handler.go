@@ -58,7 +58,9 @@ func (h *RecordPlayerHandler) HandleBlockPlace(ctx *player.Context, pos cube.Pos
 		return
 	}
 	h.r.PushPlaceBlock(pos, b)
-	h.r.PushPlayerSwingArm(ctx.Val())
+	if !hasSwingArmHandler {
+		h.r.PushPlayerSwingArm(ctx.Val())
+	}
 }
 
 func (h *RecordPlayerHandler) HandleBlockBreak(ctx *player.Context, pos cube.Pos, _ *[]item.Stack, _ *int) {
@@ -66,7 +68,9 @@ func (h *RecordPlayerHandler) HandleBlockBreak(ctx *player.Context, pos cube.Pos
 		return
 	}
 	h.r.PushBreakBlock(pos)
-	h.r.PushPlayerSwingArm(ctx.Val())
+	if !hasSwingArmHandler {
+		h.r.PushPlayerSwingArm(ctx.Val())
+	}
 }
 
 func (h *RecordPlayerHandler) HandleItemConsume(ctx *player.Context, _ item.Stack) {
@@ -102,36 +106,34 @@ func (h *RecordPlayerHandler) HandleItemUse(ctx *player.Context) {
 }
 
 func (h *RecordPlayerHandler) HandleSkinChange(ctx *player.Context, skin *skin.Skin) {
-	if ctx.Cancelled() {
+	if ctx.Cancelled() || hasSwingArmHandler {
 		return
 	}
 	h.r.PushSkinChange(ctx.Val(), *skin)
 }
 
 func (h *RecordPlayerHandler) HandleHurt(ctx *player.Context, _ *float64, _ bool, _ *time.Duration, _ world.DamageSource) {
-	if ctx.Cancelled() {
+	if ctx.Cancelled() || hasSwingArmHandler {
 		return
 	}
 	h.r.PushPlayerHurt(ctx.Val())
 }
 
 func (h *RecordPlayerHandler) HandlePunchAir(ctx *player.Context) {
-	if ctx.Cancelled() {
+	if ctx.Cancelled() || hasSwingArmHandler {
 		return
 	}
 	h.r.PushPlayerSwingArm(ctx.Val())
 }
 
 func (h *RecordPlayerHandler) HandleItemUseOnEntity(ctx *player.Context, _ world.Entity) {
-	if ctx.Cancelled() {
+	if ctx.Cancelled() || hasSwingArmHandler {
 		return
 	}
-	// TODO: this handler may not call SwingArm!
-	h.r.PushPlayerSwingArm(ctx.Val())
 }
 
 func (h *RecordPlayerHandler) HandleItemUseOnBlock(ctx *player.Context, pos cube.Pos, _ cube.Face, _ mgl64.Vec3) {
-	if ctx.Cancelled() {
+	if ctx.Cancelled() || hasSwingArmHandler {
 		return
 	}
 	b := ctx.Val().Tx().Block(pos)
@@ -148,8 +150,20 @@ func (h *RecordPlayerHandler) HandleItemUseOnBlock(ctx *player.Context, pos cube
 }
 
 func (h *RecordPlayerHandler) HandleAttackEntity(ctx *player.Context, _ world.Entity, _, _ *float64, _ *bool) {
-	if ctx.Cancelled() {
+	if ctx.Cancelled() || hasSwingArmHandler {
 		return
 	}
 	h.r.PushPlayerSwingArm(ctx.Val())
+}
+
+func (h *RecordPlayerHandler) HandleSwingArm(p *player.Player) {
+	h.r.PushPlayerSwingArm(p)
+}
+
+var hasSwingArmHandler = false
+
+func init() {
+	if _, ok := toAny(player.NopHandler{}).(interface{ HandleSwingArm(p *player.Player) }); ok {
+		hasSwingArmHandler = true
+	}
 }
