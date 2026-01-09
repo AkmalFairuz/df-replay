@@ -106,14 +106,14 @@ func (h *RecordPlayerHandler) HandleItemUse(ctx *player.Context) {
 }
 
 func (h *RecordPlayerHandler) HandleSkinChange(ctx *player.Context, skin *skin.Skin) {
-	if ctx.Cancelled() || hasSwingArmHandler {
+	if ctx.Cancelled() {
 		return
 	}
 	h.r.PushSkinChange(ctx.Val(), *skin)
 }
 
 func (h *RecordPlayerHandler) HandleHurt(ctx *player.Context, _ *float64, _ bool, _ *time.Duration, _ world.DamageSource) {
-	if ctx.Cancelled() || hasSwingArmHandler {
+	if ctx.Cancelled() {
 		return
 	}
 	h.r.PushPlayerHurt(ctx.Val())
@@ -126,11 +126,7 @@ func (h *RecordPlayerHandler) HandlePunchAir(ctx *player.Context) {
 	h.r.PushPlayerSwingArm(ctx.Val())
 }
 
-func (h *RecordPlayerHandler) HandleItemUseOnEntity(ctx *player.Context, _ world.Entity) {
-	if ctx.Cancelled() || hasSwingArmHandler {
-		return
-	}
-}
+func (h *RecordPlayerHandler) HandleItemUseOnEntity(ctx *player.Context, _ world.Entity) {}
 
 func (h *RecordPlayerHandler) HandleItemUseOnBlock(ctx *player.Context, pos cube.Pos, _ cube.Face, _ mgl64.Vec3) {
 	if ctx.Cancelled() || hasSwingArmHandler {
