@@ -58,7 +58,8 @@ func (r *RecorderViewer) HideEntity(e world.Entity) {
 	}
 }
 
-func (r *RecorderViewer) ViewEntityGameMode(e world.Entity) {}
+func (r *RecorderViewer) ViewEntityGameMode(e world.Entity) {
+}
 
 func (r *RecorderViewer) ViewEntityMovement(e world.Entity, pos mgl64.Vec3, rot cube.Rotation, onGround bool) {
 	switch e := e.(type) {
@@ -141,6 +142,7 @@ func (r *RecorderViewer) ViewEntityState(e world.Entity) {
 			r.r.PushPlayerCrawling(e, s.Crawling)
 			r.r.PushPlayerSwimming(e, s.Swimming)
 			r.r.PushSetPlayerNameTag(e, s.NameTag)
+			r.r.PushPlayerOnFire(e, s.OnFire)
 			return
 		}
 
@@ -167,6 +169,9 @@ func (r *RecorderViewer) ViewEntityState(e world.Entity) {
 		}
 		if prev.NameTag != s.NameTag {
 			r.r.PushSetPlayerNameTag(e, s.NameTag)
+		}
+		if prev.OnFire != s.OnFire {
+			r.r.PushPlayerOnFire(e, s.OnFire)
 		}
 	default:
 		s := internal.GetEntityState(e)

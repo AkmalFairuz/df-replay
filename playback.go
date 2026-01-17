@@ -630,6 +630,28 @@ func (w *Playback) ContinueCrackBlock(tx *world.Tx, pos cube.Pos, duration time.
 	}
 }
 
+// PlayerOnFire returns whether the player with the given ID is on fire.
+func (w *Playback) PlayerOnFire(tx *world.Tx, id uint32) bool {
+	p, ok := w.openPlayer(tx, id)
+	if !ok {
+		return false
+	}
+	return p.OnFireDuration() > 0
+}
+
+// SetPlayerOnFire sets whether the player with the given ID is on fire.
+func (w *Playback) SetPlayerOnFire(tx *world.Tx, id uint32, onFire bool) {
+	p, ok := w.openPlayer(tx, id)
+	if !ok {
+		return
+	}
+	if onFire {
+		p.SetOnFire(time.Second * 9999)
+	} else {
+		p.Extinguish()
+	}
+}
+
 func (w *Playback) DoPlayerTotemUse(tx *world.Tx, id uint32) {
 	p, ok := w.openPlayer(tx, id)
 	if !ok {

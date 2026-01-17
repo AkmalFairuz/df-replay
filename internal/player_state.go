@@ -1,6 +1,8 @@
 package internal
 
-import "github.com/df-mc/dragonfly/server/player"
+import (
+	"github.com/df-mc/dragonfly/server/player"
+)
 
 type PlayerState struct {
 	Invisible bool
@@ -11,6 +13,7 @@ type PlayerState struct {
 	Gliding   bool
 	Sprinting bool
 	NameTag   string
+	OnFire    bool
 }
 
 func GetPlayerState(p *player.Player) (s PlayerState) {
@@ -22,5 +25,6 @@ func GetPlayerState(p *player.Player) (s PlayerState) {
 	s.Gliding = p.Gliding()
 	s.Sprinting = p.Sprinting()
 	s.NameTag = p.NameTag()
+	s.OnFire = p.OnFireDuration() > 0
 	return
 }

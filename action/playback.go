@@ -64,4 +64,6 @@ type Playback interface {
 	PlayerCrawling(tx *world.Tx, id uint32) bool
 	SetPlayerCrawling(tx *world.Tx, id uint32, crawling bool)
 	DoPlayerTotemUse(tx *world.Tx, id uint32)
+	PlayerOnFire(tx *world.Tx, id uint32) bool
+	SetPlayerOnFire(tx *world.Tx, id uint32, onFire bool)
 }

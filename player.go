@@ -5,7 +5,16 @@ import (
 	"github.com/df-mc/dragonfly/server/player"
 	"github.com/df-mc/dragonfly/server/world"
 	"github.com/go-gl/mathgl/mgl64"
+	"time"
 )
+
+type cancelHurtHandler struct {
+	player.NopHandler
+}
+
+func (cancelHurtHandler) HandleHurt(ctx *player.Context, _ *float64, _ bool, _ *time.Duration, _ world.DamageSource) {
+	ctx.Cancel()
+}
 
 type Player struct {
 	id   uint32
@@ -67,9 +76,6 @@ func (p ptype) EncodeNBT(data *world.EntityData) map[string]any {
 
 type replayPlayer struct {
 	*player.Player
-
-	usingItem bool
-	visible   bool
 }
 
 func (p *replayPlayer) Tick(*world.Tx, int64) {}
@@ -77,28 +83,8 @@ func (p *replayPlayer) Tick(*world.Tx, int64) {}
 func (p *replayPlayer) Hurt(float64, world.DamageSource) (float64, bool) { return 0, false }
 
 func (p *replayPlayer) SetUsingItem(useItem bool) {
-	p.usingItem = useItem
-	player_updateState(p.Player)
-}
-
-func (p *replayPlayer) UsingItem() bool {
-	return p.usingItem
-}
-
-// SetInvisible sets the player's visibility to invisible if invisible is true, and visible otherwise.
-func (p *replayPlayer) SetInvisible() {
-	p.visible = false
-	player_updateState(p.Player)
-}
-
-// Invisible returns whether the player is invisible.
-func (p *replayPlayer) Invisible() bool {
-	return !p.visible
-}
-
-// SetVisible sets the player's visibility to visible.
-func (p *replayPlayer) SetVisible() {
-	p.visible = true
+	updatePlayerEntityData(p.Player, "usingItem", useItem)
+	updatePlayerEntityData(p.Player, "usingSince", time.Now())
 	player_updateState(p.Player)
 }
 

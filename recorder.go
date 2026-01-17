@@ -486,6 +486,11 @@ func (r *Recorder) PushPlayerCrawling(p *player.Player, crawling bool) {
 	r.pushPlayerState(p, action.SetPlayerStateTypeCrawling, crawling)
 }
 
+// PushPlayerOnFire ...
+func (r *Recorder) PushPlayerOnFire(p *player.Player, onFire bool) {
+	r.pushPlayerState(p, action.SetPlayerStateTypeOnFire, onFire)
+}
+
 // PushPlayerSprinting ...
 func (r *Recorder) PushPlayerSprinting(p *player.Player, sprinting bool) {
 	r.pushPlayerState(p, action.SetPlayerStateTypeSprinting, sprinting)

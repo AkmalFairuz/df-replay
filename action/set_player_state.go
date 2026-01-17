@@ -12,6 +12,7 @@ const (
 	SetPlayerStateTypeUsingItem
 	SetPlayerStateTypeSwimming
 	SetPlayerStateTypeCrawling
+	SetPlayerStateTypeOnFire
 )
 
 type SetPlayerState struct {
@@ -74,5 +75,11 @@ func (a *SetPlayerState) Play(ctx *PlayContext) {
 			ctx.Playback().SetPlayerCrawling(ctx.Tx(), a.PlayerID, prev)
 		})
 		ctx.Playback().SetPlayerCrawling(ctx.Tx(), a.PlayerID, a.Value)
+	case SetPlayerStateTypeOnFire:
+		prev := ctx.Playback().PlayerOnFire(ctx.Tx(), a.PlayerID)
+		ctx.OnReverse(func(ctx *PlayContext) {
+			ctx.Playback().SetPlayerOnFire(ctx.Tx(), a.PlayerID, prev)
+		})
+		ctx.Playback().SetPlayerOnFire(ctx.Tx(), a.PlayerID, a.Value)
 	}
 }
