@@ -386,7 +386,8 @@ func (w *Playback) SpawnPlayer(tx *world.Tx, username, nameTag string, id uint32
 		h:    h,
 		l:    l,
 	}
-	tx.AddEntity(h)
+	p := tx.AddEntity(h).(*player.Player)
+	p.Handle(cancelHurtHandler{})
 }
 
 func (w *Playback) PlayerName(id uint32) string {
