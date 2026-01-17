@@ -189,7 +189,7 @@ func (w *Playback) SpawnEntity(tx *world.Tx, id uint32, identifier, nameTag stri
 	})
 	e := tx.AddEntity(h).(*entity.Ent)
 	if ownerId, ok := extraData["Owner"]; ok {
-		rp, ok := w.Player(ownerId.(uint32))
+		rp, ok := w.Player(uint32(ownerId.(int32)))
 		if ok {
 			e.Behaviour().(*entityBehaviour).SetOwner(rp.h)
 		}
