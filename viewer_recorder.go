@@ -17,6 +17,8 @@ import (
 )
 
 type RecorderViewer struct {
+	world.NopViewer
+
 	r *Recorder
 
 	playerStatesMu sync.Mutex
