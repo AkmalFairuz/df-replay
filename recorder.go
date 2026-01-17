@@ -47,27 +47,41 @@ type Recorder struct {
 	lastPushedEntityMovements map[uuid.UUID]mgl64.Vec3
 
 	entityMovementRecorder *WorldEntityMovementRecorder
+
+	enableEntityMovementRecording bool
 }
 
 // NewRecorder creates a new recorder, returning a pointer to the recorder.
 func NewRecorder(id uuid.UUID) *Recorder {
+	return newRecorder(id, true)
+}
+
+// NewRecorderWithoutEntityMovementRecording creates a new recorder that does not record entity movements.
+func NewRecorderWithoutEntityMovementRecording(id uuid.UUID) *Recorder {
+	return newRecorder(id, false)
+}
+
+func newRecorder(id uuid.UUID, enableEntityMovementRecording bool) *Recorder {
 	return &Recorder{
-		id:                        id,
-		nextID:                    1,
-		buffer:                    bytes.NewBuffer(make([]byte, 0, 8192)), // 8KB
-		pendingActions:            make(map[uint32][]action.Action, 6000), // 5 minutes
-		closing:                   make(chan struct{}),
-		playerIDs:                 make(map[uuid.UUID]uint32, 32),
-		entityIDs:                 make(map[uuid.UUID]uint32, 32),
-		lastPushedPlayerMovements: make(map[uuid.UUID]mgl64.Vec3, 32),
-		lastPushedEntityMovements: make(map[uuid.UUID]mgl64.Vec3, 32),
-		tick:                      1,
+		id:                            id,
+		nextID:                        1,
+		buffer:                        bytes.NewBuffer(make([]byte, 0, 8192)), // 8KB
+		pendingActions:                make(map[uint32][]action.Action, 6000), // 5 minutes
+		closing:                       make(chan struct{}),
+		playerIDs:                     make(map[uuid.UUID]uint32, 32),
+		entityIDs:                     make(map[uuid.UUID]uint32, 32),
+		lastPushedPlayerMovements:     make(map[uuid.UUID]mgl64.Vec3, 32),
+		lastPushedEntityMovements:     make(map[uuid.UUID]mgl64.Vec3, 32),
+		tick:                          1,
+		enableEntityMovementRecording: enableEntityMovementRecording,
 	}
 }
 
 // StartTicking ...
 func (r *Recorder) StartTicking(w *world.World) {
-	r.entityMovementRecorder = newWorldEntityMovementRecorder(r)
+	if r.enableEntityMovementRecording {
+		r.entityMovementRecorder = newWorldEntityMovementRecorder(r)
+	}
 
 	r.mu.Lock()
 	if r.w != nil {
@@ -78,7 +92,9 @@ func (r *Recorder) StartTicking(w *world.World) {
 
 	r.recording.Add(2)
 
-	go r.entityMovementRecorder.StartTicking()
+	if r.enableEntityMovementRecording {
+		go r.entityMovementRecorder.StartTicking()
+	}
 	go r.startTickCounter()
 }
 
@@ -187,6 +203,21 @@ func (r *Recorder) AddEntity(e world.Entity) {
 		extraData["ItemCount"] = int32(stack.Count())
 	case entity.TextType:
 		extraData["IsTextType"] = byte(1)
+	case entity.TNTType:
+		extraData["Fuse"] = int32(e.(*entity.Ent).Behaviour().(*entity.PassiveBehaviour).Fuse().Milliseconds())
+	}
+	type hasOwner interface {
+		Owner() *world.EntityHandle
+	}
+	if ent, ok := e.(*entity.Ent); ok {
+		if ownerable, ok := ent.Behaviour().(hasOwner); ok {
+			if owner := ownerable.Owner(); owner != nil {
+				ownerID := r.PlayerIDByHandle(owner)
+				if ownerID != 0 {
+					extraData["Owner"] = int32(ownerID)
+				}
+			}
+		}
 	}
 	var nameTag string
 	if ent, ok := e.(interface{ NameTag() string }); ok {
@@ -405,40 +436,38 @@ func (r *Recorder) PushPlayerHandChange(p *player.Player, mainHand, offHand item
 
 // PushPlayerSwingArm ...
 func (r *Recorder) PushPlayerSwingArm(p *player.Player) {
-	playerID := r.PlayerID(p)
-	if playerID == 0 {
-		return
-	}
-
-	r.PushAction(&action.PlayerAnimate{
-		PlayerID:  playerID,
-		Animation: action.PlayerAnimateSwing,
-	})
+	r.pushPlayerAnimate(p, action.PlayerAnimateSwing)
 }
 
 // PushPlayerEating ...
 func (r *Recorder) PushPlayerEating(p *player.Player) {
-	playerID := r.PlayerID(p)
-	if playerID == 0 {
-		return
-	}
-
-	r.PushAction(&action.PlayerAnimate{
-		PlayerID:  playerID,
-		Animation: action.PlayerAnimateEating,
-	})
+	r.pushPlayerAnimate(p, action.PlayerAnimateEating)
 }
 
 // PushPlayerHurt ...
 func (r *Recorder) PushPlayerHurt(p *player.Player) {
+	r.pushPlayerAnimate(p, action.PlayerAnimateHurt)
+}
+
+// PushPlayerCriticalHit ...
+func (r *Recorder) PushPlayerCriticalHit(p *player.Player) {
+	r.pushPlayerAnimate(p, action.PlayerAnimateCriticalHit)
+}
+
+// PushPlayerEnchantedHit ...
+func (r *Recorder) PushPlayerEnchantedHit(p *player.Player) {
+	r.pushPlayerAnimate(p, action.PlayerAnimateEnchantedHit)
+}
+
+// pushPlayerAnimate ...
+func (r *Recorder) pushPlayerAnimate(p *player.Player, animation uint8) {
 	playerID := r.PlayerID(p)
 	if playerID == 0 {
 		return
 	}
-
 	r.PushAction(&action.PlayerAnimate{
 		PlayerID:  playerID,
-		Animation: action.PlayerAnimateHurt,
+		Animation: animation,
 	})
 }
 

@@ -47,6 +47,14 @@ func (packetHandler) HandleServerPacket(ctx *intercept.Context, pk packet.Packet
 			})
 			return
 		}
+		if data.identifier == "minecraft:tnt" {
+			fuseTime, ok := data.extraData["FuseTime"]
+			if !ok {
+				pk.EntityMetadata[protocol.EntityDataKeyFuseTime] = int32(80)
+			} else {
+				pk.EntityMetadata[protocol.EntityDataKeyFuseTime] = fuseTime.(int32) / 50
+			}
+		}
 		if _, isTextType := data.extraData["IsTextType"]; isTextType {
 			pk.EntityMetadata[protocol.EntityDataKeyVariant] = int32(world.BlockRuntimeID(block.Air{}))
 		}

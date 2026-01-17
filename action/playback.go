@@ -68,4 +68,6 @@ type Playback interface {
 	SetPlayerOnFire(tx *world.Tx, id uint32, onFire bool)
 	PlayerVisibleEffects(tx *world.Tx, id uint32) ([]int, bool)
 	SetPlayerVisibleEffects(tx *world.Tx, id uint32, effectIDs []int)
+	DoPlayerCriticalHit(tx *world.Tx, id uint32)
+	DoPlayerEnchantedHit(tx *world.Tx, id uint32)
 }

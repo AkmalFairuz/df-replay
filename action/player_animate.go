@@ -13,6 +13,8 @@ const (
 	PlayerAnimateStartUsingItem
 	PlayerAnimateStopUsingItem
 	PlayerAnimateTotemUse
+	PlayerAnimateCriticalHit
+	PlayerAnimateEnchantedHit
 )
 
 type PlayerAnimate struct {
@@ -63,6 +65,16 @@ func (a *PlayerAnimate) Play(ctx *PlayContext) {
 			ctx.Playback().DoPlayerTotemUse(ctx.Tx(), a.PlayerID)
 		})
 		ctx.Playback().DoPlayerTotemUse(ctx.Tx(), a.PlayerID)
+	case PlayerAnimateCriticalHit:
+		ctx.OnReverse(func(ctx *PlayContext) {
+			ctx.Playback().DoPlayerCriticalHit(ctx.Tx(), a.PlayerID)
+		})
+		ctx.Playback().DoPlayerCriticalHit(ctx.Tx(), a.PlayerID)
+	case PlayerAnimateEnchantedHit:
+		ctx.OnReverse(func(ctx *PlayContext) {
+			ctx.Playback().DoPlayerCriticalHit(ctx.Tx(), a.PlayerID)
+		})
+		ctx.Playback().DoPlayerCriticalHit(ctx.Tx(), a.PlayerID)
 	default:
 		// Unknown animation.
 	}

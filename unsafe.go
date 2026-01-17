@@ -82,6 +82,15 @@ func getEntityHandleData(h *world.EntityHandle, field string) any {
 	return f.Interface()
 }
 
+// getEntTx ...
+func getEntTx(e *entity.Ent) *world.Tx {
+	if v, ok := toAny(e).(interface{ Tx() *world.Tx }); ok {
+		return v.Tx()
+	}
+	rf := reflect.ValueOf(e).Elem().FieldByName("tx")
+	return reflect.NewAt(rf.Type(), unsafe.Pointer(rf.UnsafeAddr())).Elem().Interface().(*world.Tx)
+}
+
 //go:linkname player_viewers github.com/df-mc/dragonfly/server/player.(*Player).viewers
 func player_viewers(*player.Player) []world.Viewer
 

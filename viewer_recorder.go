@@ -103,6 +103,10 @@ func (r *RecorderViewer) ViewEntityAction(e world.Entity, a world.EntityAction) 
 			r.r.PushPlayerEating(e)
 		case entity.TotemUseAction:
 			r.r.PushPlayerTotemUse(e)
+		case entity.CriticalHitAction:
+			r.r.PushPlayerCriticalHit(e)
+		case entity.EnchantedHitAction:
+			r.r.PushPlayerEnchantedHit(e)
 		}
 	}
 }

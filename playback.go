@@ -187,7 +187,13 @@ func (w *Playback) SpawnEntity(tx *world.Tx, id uint32, identifier, nameTag stri
 		Identifier: identifier,
 		ExtraData:  extraData,
 	})
-	tx.AddEntity(h)
+	e := tx.AddEntity(h).(*entity.Ent)
+	if ownerId, ok := extraData["Owner"]; ok {
+		rp, ok := w.Player(ownerId.(uint32))
+		if ok {
+			e.Behaviour().(*entityBehaviour).SetOwner(rp.h)
+		}
+	}
 	l := world.NewLoader(4, tx.World(), world.NopViewer{})
 	l.Move(tx, pos)
 	l.Load(tx, 4)
@@ -709,6 +715,26 @@ func (w *Playback) SetPlayerVisibleEffects(tx *world.Tx, id uint32, effectIDs []
 		if !lo.Contains(effectIDs, effectId) {
 			p.RemoveEffect(e.Type())
 		}
+	}
+}
+
+func (w *Playback) DoPlayerCriticalHit(tx *world.Tx, id uint32) {
+	p, ok := w.openPlayer(tx, id)
+	if !ok {
+		return
+	}
+	for _, v := range player_viewers(p.Player) {
+		v.ViewEntityAction(p, entity.CriticalHitAction{})
+	}
+}
+
+func (w *Playback) DoPlayerEnchantedHit(tx *world.Tx, id uint32) {
+	p, ok := w.openPlayer(tx, id)
+	if !ok {
+		return
+	}
+	for _, v := range player_viewers(p.Player) {
+		v.ViewEntityAction(p, entity.EnchantedHitAction{})
 	}
 }
 

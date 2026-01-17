@@ -25,6 +25,7 @@ func (conf entityBehaviourConfig) New() *entityBehaviour {
 type entityBehaviour struct {
 	identifier string
 	extraData  map[string]any
+	owner      *world.EntityHandle
 }
 
 func (b *entityBehaviour) Tick(*entity.Ent, *world.Tx) *entity.Movement {
@@ -35,4 +36,14 @@ func (b *entityBehaviour) Tick(*entity.Ent, *world.Tx) *entity.Movement {
 func (b *entityBehaviour) Immobile() bool {
 	// Prevent predicted movement from clients.
 	return true
+}
+
+// SetOwner ...
+func (b *entityBehaviour) SetOwner(h *world.EntityHandle) {
+	b.owner = h
+}
+
+// Owner ...
+func (b *entityBehaviour) Owner() *world.EntityHandle {
+	return b.owner
 }
