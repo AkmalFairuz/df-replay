@@ -28,7 +28,7 @@ type RecorderViewer struct {
 	entityStates   map[uuid.UUID]internal.EntityState
 }
 
-func NewRecorderViewer(r *Recorder) *RecorderViewer {
+func NewRecorderViewer(r *Recorder) world.Viewer {
 	return &RecorderViewer{
 		r:            r,
 		playerStates: make(map[uuid.UUID]internal.PlayerState),
