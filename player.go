@@ -83,9 +83,9 @@ func (p *replayPlayer) Tick(*world.Tx, int64) {}
 func (p *replayPlayer) Hurt(float64, world.DamageSource) (float64, bool) { return 0, false }
 
 func (p *replayPlayer) SetUsingItem(useItem bool) {
-	updatePlayerEntityData(p.Player, "usingItem", useItem)
+	updatePlayerData(p.Player, "usingItem", useItem)
 	if useItem {
-		updatePlayerEntityData(p.Player, "usingSince", time.Now())
+		updatePlayerData(p.Player, "usingSince", time.Now())
 	}
 	player_updateState(p.Player)
 }
