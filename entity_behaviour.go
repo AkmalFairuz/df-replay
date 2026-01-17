@@ -30,3 +30,9 @@ type entityBehaviour struct {
 func (b *entityBehaviour) Tick(*entity.Ent, *world.Tx) *entity.Movement {
 	return nil
 }
+
+// Immobile ...
+func (b *entityBehaviour) Immobile() bool {
+	// Prevent predicted movement from clients.
+	return true
+}
