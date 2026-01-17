@@ -21,4 +21,11 @@ const (
 	IDChestUpdate
 	IDPlayerDeltaMove
 	IDEntityDeltaMove
+	IDEmote
+	IDCrackBlock
+	IDBlockSound
+	IDSetPlayerState
+	IDBlockParticle
+	IDFallSound
+	IDGeneralParticle
 )

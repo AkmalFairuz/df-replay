@@ -6,6 +6,8 @@ import (
 	"github.com/df-mc/dragonfly/server/player/skin"
 	"github.com/df-mc/dragonfly/server/world"
 	"github.com/go-gl/mathgl/mgl64"
+	"github.com/google/uuid"
+	"time"
 )
 
 type Playback interface {
@@ -47,4 +49,19 @@ type Playback interface {
 	SetLiquid(tx *world.Tx, pos cube.Pos, l world.Liquid)
 	UpdateChestState(tx *world.Tx, pos cube.Pos, open bool)
 	ChestState(tx *world.Tx, pos cube.Pos) bool
+	StartCrackBlock(tx *world.Tx, pos cube.Pos, duration time.Duration)
+	StopCrackBlock(tx *world.Tx, pos cube.Pos)
+	ContinueCrackBlock(tx *world.Tx, pos cube.Pos, duration time.Duration)
+	Emote(tx *world.Tx, id uint32, emoteId uuid.UUID)
+	PlayerVisible(tx *world.Tx, id uint32) bool
+	SetPlayerVisibility(tx *world.Tx, id uint32, visible bool)
+	PlayerSprinting(tx *world.Tx, id uint32) bool
+	SetPlayerSprinting(tx *world.Tx, id uint32, sprinting bool)
+	PlayerGliding(tx *world.Tx, id uint32) bool
+	SetPlayerGliding(tx *world.Tx, id uint32, gliding bool)
+	PlayerSwimming(tx *world.Tx, id uint32) bool
+	SetPlayerSwimming(tx *world.Tx, id uint32, swimming bool)
+	PlayerCrawling(tx *world.Tx, id uint32) bool
+	SetPlayerCrawling(tx *world.Tx, id uint32, crawling bool)
+	DoPlayerTotemUse(tx *world.Tx, id uint32)
 }

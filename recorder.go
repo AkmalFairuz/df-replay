@@ -213,6 +213,8 @@ func (r *Recorder) RemoveEntity(e world.Entity) {
 	r.PushAction(&action.EntityDespawn{
 		EntityID: entityID,
 	})
+
+	r.removeLastEntityMovement(e)
 }
 
 // PlayerID ...
@@ -273,6 +275,8 @@ func (r *Recorder) RemovePlayer(p *player.Player) {
 	r.PushAction(&action.PlayerDespawn{
 		PlayerID: playerID,
 	})
+
+	r.removeLastPlayerMovement(p)
 }
 
 // PushPlayerMovement ...
@@ -412,26 +416,6 @@ func (r *Recorder) PushPlayerSwingArm(p *player.Player) {
 	})
 }
 
-// PushPlayerUsingItem ...
-func (r *Recorder) PushPlayerUsingItem(p *player.Player, usingItem bool) {
-	playerID := r.PlayerID(p)
-	if playerID == 0 {
-		return
-	}
-
-	var animation uint8
-	if usingItem {
-		animation = action.PlayerAnimateStartUsingItem
-	} else {
-		animation = action.PlayerAnimateStopUsingItem
-	}
-
-	r.PushAction(&action.PlayerAnimate{
-		PlayerID:  playerID,
-		Animation: animation,
-	})
-}
-
 // PushPlayerEating ...
 func (r *Recorder) PushPlayerEating(p *player.Player) {
 	playerID := r.PlayerID(p)
@@ -445,26 +429,6 @@ func (r *Recorder) PushPlayerEating(p *player.Player) {
 	})
 }
 
-// PushPlayerSneaking ...
-func (r *Recorder) PushPlayerSneaking(p *player.Player, sneaking bool) {
-	playerID := r.PlayerID(p)
-	if playerID == 0 {
-		return
-	}
-
-	var animation uint8
-	if sneaking {
-		animation = action.PlayerAnimateSneak
-	} else {
-		animation = action.PlayerAnimateStopSneak
-	}
-
-	r.PushAction(&action.PlayerAnimate{
-		PlayerID:  playerID,
-		Animation: animation,
-	})
-}
-
 // PushPlayerHurt ...
 func (r *Recorder) PushPlayerHurt(p *player.Player) {
 	playerID := r.PlayerID(p)
@@ -475,6 +439,107 @@ func (r *Recorder) PushPlayerHurt(p *player.Player) {
 	r.PushAction(&action.PlayerAnimate{
 		PlayerID:  playerID,
 		Animation: action.PlayerAnimateHurt,
+	})
+}
+
+// pushPlayerState ...
+func (r *Recorder) pushPlayerState(p *player.Player, stateType uint8, value bool) {
+	playerID := r.PlayerID(p)
+	if playerID == 0 {
+		return
+	}
+
+	r.PushAction(&action.SetPlayerState{
+		PlayerID: playerID,
+		Type:     stateType,
+		Value:    value,
+	})
+}
+
+// PushPlayerUsingItem ...
+func (r *Recorder) PushPlayerUsingItem(p *player.Player, usingItem bool) {
+	r.pushPlayerState(p, action.SetPlayerStateTypeUsingItem, usingItem)
+}
+
+// PushPlayerSneaking ...
+func (r *Recorder) PushPlayerSneaking(p *player.Player, sneaking bool) {
+	r.pushPlayerState(p, action.SetPlayerStateTypeSneaking, sneaking)
+}
+
+// PushPlayerVisibility ...
+func (r *Recorder) PushPlayerVisibility(p *player.Player, visibility bool) {
+	r.pushPlayerState(p, action.SetPlayerStateTypeVisibility, visibility)
+}
+
+// PushPlayerSwimming ...
+func (r *Recorder) PushPlayerSwimming(p *player.Player, swimming bool) {
+	r.pushPlayerState(p, action.SetPlayerStateTypeSwimming, swimming)
+}
+
+// PushPlayerGliding ...
+func (r *Recorder) PushPlayerGliding(p *player.Player, gliding bool) {
+	r.pushPlayerState(p, action.SetPlayerStateTypeGliding, gliding)
+}
+
+// PushPlayerCrawling ...
+func (r *Recorder) PushPlayerCrawling(p *player.Player, crawling bool) {
+	r.pushPlayerState(p, action.SetPlayerStateTypeCrawling, crawling)
+}
+
+// PushPlayerSprinting ...
+func (r *Recorder) PushPlayerSprinting(p *player.Player, sprinting bool) {
+	r.pushPlayerState(p, action.SetPlayerStateTypeSprinting, sprinting)
+}
+
+// PushBlockBreakingSound ...
+func (r *Recorder) PushBlockBreakingSound(pos cube.Pos, b world.Block) {
+	r.pushBlockSound(pos, b, action.BlockSoundTypeBreaking)
+}
+
+// PushBlockPlaceSound ...
+func (r *Recorder) PushBlockPlaceSound(pos cube.Pos, b world.Block) {
+	r.pushBlockSound(pos, b, action.BlockSoundTypePlace)
+}
+
+// pushBlockSound ...
+func (r *Recorder) pushBlockSound(pos cube.Pos, b world.Block, t uint8) {
+	r.PushAction(&action.BlockSound{
+		Position: cubeToBlockPos(pos),
+		Block:    action.FromBlock(b),
+		Type:     t,
+	})
+}
+
+// PushBlockBreakParticle ...
+func (r *Recorder) PushBlockBreakParticle(pos cube.Pos, b world.Block) {
+	r.pushBlockParticle(pos, b, action.BlockParticleTypeBreak, 0)
+}
+
+// PushBlockPunchingParticle ...
+func (r *Recorder) PushBlockPunchingParticle(pos cube.Pos, b world.Block, face cube.Face) {
+	r.pushBlockParticle(pos, b, action.BlockParticleTypePunching, uint8(face))
+}
+
+// PushGeneralParticle ...
+func (r *Recorder) PushGeneralParticle(pos mgl64.Vec3, p world.Particle) bool {
+	particleId, ok := internal.ToParticleID(p)
+	if !ok {
+		return false
+	}
+	r.PushAction(&action.GeneralParticle{
+		Position:   vec64To32(pos),
+		ParticleID: particleId,
+	})
+	return true
+}
+
+// pushBlockParticle ...
+func (r *Recorder) pushBlockParticle(pos cube.Pos, b world.Block, t uint8, face uint8) {
+	r.PushAction(&action.BlockParticle{
+		Position: cubeToBlockPos(pos),
+		Block:    action.FromBlock(b),
+		Type:     t,
+		Face:     face,
 	})
 }
 
@@ -553,6 +618,72 @@ func (r *Recorder) PushChestUpdate(pos cube.Pos, open bool) {
 	})
 }
 
+// PushPlayerArmorChange ...
+func (r *Recorder) PushPlayerArmorChange(p *player.Player) {
+	playerID := r.PlayerID(p)
+	if playerID == 0 {
+		return
+	}
+
+	r.PushAction(&action.PlayerArmorChange{
+		PlayerID:   playerID,
+		Helmet:     action.ItemFromStack(p.Armour().Helmet()),
+		Chestplate: action.ItemFromStack(p.Armour().Chestplate()),
+		Leggings:   action.ItemFromStack(p.Armour().Leggings()),
+		Boots:      action.ItemFromStack(p.Armour().Boots()),
+	})
+}
+
+// PushEmote ...
+func (r *Recorder) PushEmote(p *player.Player, emote uuid.UUID) {
+	playerID := r.PlayerID(p)
+	if playerID == 0 {
+		return
+	}
+
+	r.PushAction(&action.Emote{
+		PlayerID: playerID,
+		EmoteID:  emote,
+	})
+}
+
+// PushStartCrackBlock ...
+func (r *Recorder) PushStartCrackBlock(pos cube.Pos, dur time.Duration) {
+	r.pushCrackBlock(pos, action.CrackBlockTypeStart, dur)
+}
+
+// PushStopCrackBlock ...
+func (r *Recorder) PushStopCrackBlock(pos cube.Pos) {
+	r.pushCrackBlock(pos, action.CrackBlockTypeStop, 0)
+}
+
+// PushContinueCrackBlock ...
+func (r *Recorder) PushContinueCrackBlock(pos cube.Pos, dur time.Duration) {
+	r.pushCrackBlock(pos, action.CrackBlockTypeContinue, dur)
+}
+
+// pushCrackBlock ...
+func (r *Recorder) pushCrackBlock(pos cube.Pos, t uint8, dur time.Duration) {
+	r.PushAction(&action.CrackBlock{
+		Position:     cubeToBlockPos(pos),
+		Type:         t,
+		DurationInMs: uint16(dur.Milliseconds()),
+	})
+}
+
+// PushPlayerTotemUse ...
+func (r *Recorder) PushPlayerTotemUse(p *player.Player) {
+	playerID := r.PlayerID(p)
+	if playerID == 0 {
+		return
+	}
+
+	r.PushAction(&action.PlayerAnimate{
+		PlayerID:  playerID,
+		Animation: action.PlayerAnimateTotemUse,
+	})
+}
+
 // EncodeItem ...
 func (r *Recorder) EncodeItem(s item.Stack) action.Item {
 	return action.ItemFromStack(s)
@@ -564,6 +695,13 @@ func (r *Recorder) PushAction(a action.Action) {
 	defer r.mu.Unlock()
 
 	r.pushActionNoMutex(a)
+}
+
+// removeLastPlayerMovement removes the last player movement from the recorder.
+func (r *Recorder) removeLastPlayerMovement(p *player.Player) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	delete(r.lastPushedPlayerMovements, p.UUID())
 }
 
 // removeLastEntityMovement removes the last entity movement from the recorder.

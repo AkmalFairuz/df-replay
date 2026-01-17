@@ -33,6 +33,13 @@ var (
 		IDChestUpdate:         func() Action { return &ChestUpdate{} },
 		IDPlayerDeltaMove:     func() Action { return &PlayerDeltaMove{} },
 		IDEntityDeltaMove:     func() Action { return &EntityDeltaMove{} },
+		IDCrackBlock:          func() Action { return &CrackBlock{} },
+		IDEmote:               func() Action { return &Emote{} },
+		IDBlockSound:          func() Action { return &BlockSound{} },
+		IDSetPlayerState:      func() Action { return &SetPlayerState{} },
+		IDBlockParticle:       func() Action { return &BlockParticle{} },
+		IDFallSound:           func() Action { return &FallSound{} },
+		IDGeneralParticle:     func() Action { return &GeneralParticle{} },
 	}
 )
 

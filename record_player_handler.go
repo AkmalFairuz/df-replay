@@ -100,6 +100,7 @@ func (h *RecordPlayerHandler) HandleItemUse(ctx *player.Context) {
 		h.r.PushPlayerUsingItem(ctx.Val(), true)
 	case item.Consumable:
 		h.r.PushPlayerEating(ctx.Val())
+		h.r.PushPlayerUsingItem(ctx.Val(), true)
 	default:
 		// handle other usable item, like crossbow
 	}

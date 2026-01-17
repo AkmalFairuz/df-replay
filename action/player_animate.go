@@ -12,6 +12,7 @@ const (
 	PlayerAnimateEating
 	PlayerAnimateStartUsingItem
 	PlayerAnimateStopUsingItem
+	PlayerAnimateTotemUse
 )
 
 type PlayerAnimate struct {
@@ -57,6 +58,11 @@ func (a *PlayerAnimate) Play(ctx *PlayContext) {
 			ctx.Playback().SetPlayerUsingItem(ctx.Tx(), a.PlayerID, prev)
 		})
 		ctx.Playback().SetPlayerUsingItem(ctx.Tx(), a.PlayerID, a.Animation == PlayerAnimateStartUsingItem)
+	case PlayerAnimateTotemUse:
+		ctx.OnReverse(func(ctx *PlayContext) {
+			ctx.Playback().DoPlayerTotemUse(ctx.Tx(), a.PlayerID)
+		})
+		ctx.Playback().DoPlayerTotemUse(ctx.Tx(), a.PlayerID)
 	default:
 		// Unknown animation.
 	}

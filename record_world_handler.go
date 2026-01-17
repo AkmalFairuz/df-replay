@@ -67,8 +67,6 @@ func (h *RecordWorldHandler) HandleEntityDespawn(tx *world.Tx, e world.Entity) {
 	}
 	h.r.entityMovementRecorder.removeLastMovement(e)
 	h.r.RemoveEntity(e)
-
-	h.r.removeLastEntityMovement(e)
 }
 
 func (h *RecordWorldHandler) HandleExplosion(ctx *world.Context, _ mgl64.Vec3, _ *[]world.Entity, blocks *[]cube.Pos, _ *float64, _ *bool) {

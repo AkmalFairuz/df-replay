@@ -10,7 +10,9 @@ import (
 	"github.com/df-mc/dragonfly/server/player"
 	"github.com/df-mc/dragonfly/server/player/skin"
 	"github.com/df-mc/dragonfly/server/world"
+	"github.com/df-mc/dragonfly/server/world/sound"
 	"github.com/go-gl/mathgl/mgl64"
+	"github.com/google/uuid"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -97,13 +99,28 @@ func (w *Playback) doTicking() {
 }
 
 func (w *Playback) UpdateChestState(tx *world.Tx, pos cube.Pos, open bool) {
-	w.chestState[pos] = open
+	_, isEnderChest := tx.Block(pos).(block.EnderChest)
 	for _, v := range tx.Viewers(pos.Vec3Centre()) {
 		if open {
 			v.ViewBlockAction(pos, block.OpenAction{})
+			if isEnderChest {
+				v.ViewSound(pos.Vec3Centre(), sound.EnderChestOpen{})
+			} else {
+				v.ViewSound(pos.Vec3Centre(), sound.ChestOpen{})
+			}
 		} else {
 			v.ViewBlockAction(pos, block.CloseAction{})
+			if isEnderChest {
+				v.ViewSound(pos.Vec3Centre(), sound.EnderChestClose{})
+			} else {
+				v.ViewSound(pos.Vec3Centre(), sound.ChestClose{})
+			}
 		}
+	}
+	if open {
+		w.chestState[pos] = true
+	} else {
+		delete(w.chestState, pos)
 	}
 }
 
@@ -463,7 +480,7 @@ func (w *Playback) SetPlayerUsingItem(tx *world.Tx, id uint32, usingItem bool) {
 	if !ok {
 		return
 	}
-	p.SetUseItem(usingItem)
+	p.SetUsingItem(usingItem)
 }
 
 func (w *Playback) AddParticle(tx *world.Tx, pos mgl64.Vec3, p world.Particle) {
@@ -482,6 +499,145 @@ func (w *Playback) UpdatePlayerSkin(tx *world.Tx, id uint32, skin skin.Skin) {
 		return
 	}
 	p.SetSkin(skin)
+}
+
+func (w *Playback) Emote(tx *world.Tx, id uint32, emoteId uuid.UUID) {
+	p, ok := w.openPlayer(tx, id)
+	if !ok {
+		return
+	}
+
+	for _, v := range player_viewers(p.Player) {
+		v.ViewEmote(p, emoteId)
+	}
+}
+
+func (w *Playback) PlayerVisible(tx *world.Tx, id uint32) bool {
+	p, ok := w.openPlayer(tx, id)
+	if !ok {
+		return false
+	}
+	return !p.Invisible()
+}
+
+func (w *Playback) SetPlayerVisibility(tx *world.Tx, id uint32, visible bool) {
+	p, ok := w.openPlayer(tx, id)
+	if !ok {
+		return
+	}
+	if visible {
+		p.SetVisible()
+	} else {
+		p.SetInvisible()
+	}
+}
+
+func (w *Playback) SetPlayerCrawling(tx *world.Tx, id uint32, crawling bool) {
+	p, ok := w.openPlayer(tx, id)
+	if !ok {
+		return
+	}
+	if crawling {
+		p.StartCrawling()
+	} else {
+		p.StopCrawling()
+	}
+}
+
+func (w *Playback) PlayerCrawling(tx *world.Tx, id uint32) bool {
+	p, ok := w.openPlayer(tx, id)
+	if !ok {
+		return false
+	}
+	return p.Crawling()
+}
+
+func (w *Playback) SetPlayerSwimming(tx *world.Tx, id uint32, swimming bool) {
+	p, ok := w.openPlayer(tx, id)
+	if !ok {
+		return
+	}
+	if swimming {
+		p.StartSwimming()
+	} else {
+		p.StopSwimming()
+	}
+}
+
+func (w *Playback) PlayerSwimming(tx *world.Tx, id uint32) bool {
+	p, ok := w.openPlayer(tx, id)
+	if !ok {
+		return false
+	}
+	return p.Swimming()
+}
+
+func (w *Playback) SetPlayerGliding(tx *world.Tx, id uint32, gliding bool) {
+	p, ok := w.openPlayer(tx, id)
+	if !ok {
+		return
+	}
+	if gliding {
+		p.StartGliding()
+	} else {
+		p.StopGliding()
+	}
+}
+
+func (w *Playback) PlayerGliding(tx *world.Tx, id uint32) bool {
+	p, ok := w.openPlayer(tx, id)
+	if !ok {
+		return false
+	}
+	return p.Gliding()
+}
+
+func (w *Playback) SetPlayerSprinting(tx *world.Tx, id uint32, sprinting bool) {
+	p, ok := w.openPlayer(tx, id)
+	if !ok {
+		return
+	}
+	if sprinting {
+		p.StartSprinting()
+	} else {
+		p.StopSprinting()
+	}
+}
+
+func (w *Playback) PlayerSprinting(tx *world.Tx, id uint32) bool {
+	p, ok := w.openPlayer(tx, id)
+	if !ok {
+		return false
+	}
+	return p.Sprinting()
+}
+
+func (w *Playback) StartCrackBlock(tx *world.Tx, pos cube.Pos, duration time.Duration) {
+	for _, v := range tx.Viewers(pos.Vec3Centre()) {
+		v.ViewBlockAction(pos, block.StartCrackAction{BreakTime: duration})
+	}
+}
+
+func (w *Playback) StopCrackBlock(tx *world.Tx, pos cube.Pos) {
+	for _, v := range tx.Viewers(pos.Vec3Centre()) {
+		v.ViewBlockAction(pos, block.StopCrackAction{})
+	}
+}
+
+func (w *Playback) ContinueCrackBlock(tx *world.Tx, pos cube.Pos, duration time.Duration) {
+	for _, v := range tx.Viewers(pos.Vec3Centre()) {
+		v.ViewBlockAction(pos, block.ContinueCrackAction{BreakTime: duration})
+	}
+}
+
+func (w *Playback) DoPlayerTotemUse(tx *world.Tx, id uint32) {
+	p, ok := w.openPlayer(tx, id)
+	if !ok {
+		return
+	}
+	for _, v := range player_viewers(p.Player) {
+		v.ViewEntityAction(p, entity.TotemUseAction{})
+	}
 }
 
 // Player returns a player by its ID. If the player does not exist,
