@@ -388,7 +388,7 @@ func (w *Playback) SpawnPlayer(tx *world.Tx, username, nameTag string, id uint32
 		h:    h,
 		l:    l,
 	}
-	p := tx.AddEntity(h).(*player.Player)
+	p := tx.AddEntity(h).(*replayPlayer)
 	p.Handle(cancelHurtHandler{})
 }
 
