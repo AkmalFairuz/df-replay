@@ -90,10 +90,11 @@ func (r *Recorder) StartTicking(w *world.World) {
 	r.w = w
 	r.mu.Unlock()
 
-	r.recording.Add(2)
-
 	if r.enableEntityMovementRecording {
+		r.recording.Add(2)
 		go r.entityMovementRecorder.StartTicking()
+	} else {
+		r.recording.Add(1)
 	}
 	go r.startTickCounter()
 }
