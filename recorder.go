@@ -515,6 +515,28 @@ func (r *Recorder) pushBlockSound(pos cube.Pos, b world.Block, t uint8) {
 	})
 }
 
+// PushLiquidSound ...
+func (r *Recorder) PushLiquidSound(pos cube.Pos, l world.Liquid, isFill bool) {
+	r.PushAction(&action.LiquidSound{
+		Position: cubeToBlockPos(pos),
+		Liquid:   action.FromBlock(l),
+		Type:     lo.If(isFill, action.LiquidSoundTypeFill).Else(action.LiquidSoundTypeEmpty),
+	})
+}
+
+// PushGeneralSound ...
+func (r *Recorder) PushGeneralSound(pos mgl64.Vec3, s world.Sound) bool {
+	soundID, ok := internal.ToSoundID(s)
+	if !ok {
+		return false
+	}
+	r.PushAction(&action.GeneralSound{
+		Position: vec64To32(pos),
+		SoundID:  soundID,
+	})
+	return true
+}
+
 // PushBlockBreakParticle ...
 func (r *Recorder) PushBlockBreakParticle(pos cube.Pos, b world.Block) {
 	r.pushBlockParticle(pos, b, action.BlockParticleTypeBreak, 0)
@@ -686,6 +708,18 @@ func (r *Recorder) PushPlayerTotemUse(p *player.Player) {
 	r.PushAction(&action.PlayerAnimate{
 		PlayerID:  playerID,
 		Animation: action.PlayerAnimateTotemUse,
+	})
+}
+
+// PushPlayerSetVisibleEffects ...
+func (r *Recorder) PushPlayerSetVisibleEffects(p *player.Player, effectIds []int) {
+	playerID := r.PlayerID(p)
+	if playerID == 0 {
+		return
+	}
+	r.PushAction(&action.SetPlayerVisibleEffects{
+		PlayerID: playerID,
+		Effects:  lo.Map(effectIds, func(e int, _ int) uint8 { return uint8(e) }),
 	})
 }
 

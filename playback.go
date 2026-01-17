@@ -5,6 +5,7 @@ import (
 	"github.com/df-mc/dragonfly/server/block"
 	"github.com/df-mc/dragonfly/server/block/cube"
 	"github.com/df-mc/dragonfly/server/entity"
+	"github.com/df-mc/dragonfly/server/entity/effect"
 	"github.com/df-mc/dragonfly/server/item"
 	"github.com/df-mc/dragonfly/server/item/inventory"
 	"github.com/df-mc/dragonfly/server/player"
@@ -13,6 +14,7 @@ import (
 	"github.com/df-mc/dragonfly/server/world/sound"
 	"github.com/go-gl/mathgl/mgl64"
 	"github.com/google/uuid"
+	"github.com/samber/lo"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -660,6 +662,53 @@ func (w *Playback) DoPlayerTotemUse(tx *world.Tx, id uint32) {
 	}
 	for _, v := range player_viewers(p.Player) {
 		v.ViewEntityAction(p, entity.TotemUseAction{})
+	}
+}
+
+func (w *Playback) PlayerVisibleEffects(tx *world.Tx, id uint32) ([]int, bool) {
+	p, ok := w.openPlayer(tx, id)
+	if !ok {
+		return nil, false
+	}
+	effects := lo.Filter(p.Effects(), func(e effect.Effect, _ int) bool {
+		return !e.ParticlesHidden()
+	})
+	ids := make([]int, 0, len(effects))
+	for _, e := range effects {
+		effectId, ok := effect.ID(e.Type())
+		if !ok {
+			continue
+		}
+		ids = append(ids, effectId)
+	}
+	return ids, true
+}
+
+func (w *Playback) SetPlayerVisibleEffects(tx *world.Tx, id uint32, effectIDs []int) {
+	p, ok := w.openPlayer(tx, id)
+	if !ok {
+		return
+	}
+	for _, effectId := range effectIDs {
+		eff, ok := effect.ByID(effectId)
+		if !ok {
+			continue
+		}
+		if _, hasEffect := p.Effect(eff); hasEffect {
+			continue
+		}
+		if lasting, ok := eff.(effect.LastingType); ok {
+			p.AddEffect(effect.New(lasting, 1, time.Minute*120))
+		}
+	}
+	for _, e := range p.Effects() {
+		effectId, ok := effect.ID(e.Type())
+		if !ok {
+			continue
+		}
+		if !lo.Contains(effectIDs, effectId) {
+			p.RemoveEffect(e.Type())
+		}
 	}
 }
 

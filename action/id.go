@@ -28,4 +28,7 @@ const (
 	IDBlockParticle
 	IDFallSound
 	IDGeneralParticle
+	IDLiquidSound
+	IDGeneralSound
+	IDSetPlayerVisibleEffects
 )

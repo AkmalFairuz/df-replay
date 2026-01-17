@@ -66,4 +66,6 @@ type Playback interface {
 	DoPlayerTotemUse(tx *world.Tx, id uint32)
 	PlayerOnFire(tx *world.Tx, id uint32) bool
 	SetPlayerOnFire(tx *world.Tx, id uint32, onFire bool)
+	PlayerVisibleEffects(tx *world.Tx, id uint32) ([]int, bool)
+	SetPlayerVisibleEffects(tx *world.Tx, id uint32, effectIDs []int)
 }

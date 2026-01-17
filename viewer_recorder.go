@@ -7,13 +7,11 @@ import (
 	"github.com/df-mc/dragonfly/server/entity"
 	"github.com/df-mc/dragonfly/server/player"
 	"github.com/df-mc/dragonfly/server/world"
-	"github.com/df-mc/dragonfly/server/world/chunk"
 	"github.com/df-mc/dragonfly/server/world/particle"
 	"github.com/df-mc/dragonfly/server/world/sound"
 	"github.com/go-gl/mathgl/mgl64"
 	"github.com/google/uuid"
 	"sync"
-	"time"
 )
 
 type RecorderViewer struct {
@@ -60,9 +58,6 @@ func (r *RecorderViewer) HideEntity(e world.Entity) {
 	}
 }
 
-func (r *RecorderViewer) ViewEntityGameMode(e world.Entity) {
-}
-
 func (r *RecorderViewer) ViewEntityMovement(e world.Entity, pos mgl64.Vec3, rot cube.Rotation, onGround bool) {
 	switch e := e.(type) {
 	case *player.Player:
@@ -72,8 +67,6 @@ func (r *RecorderViewer) ViewEntityMovement(e world.Entity, pos mgl64.Vec3, rot 
 	}
 }
 
-func (r *RecorderViewer) ViewEntityVelocity(e world.Entity, vel mgl64.Vec3) {}
-
 func (r *RecorderViewer) ViewEntityTeleport(e world.Entity, pos mgl64.Vec3) {
 	switch e := e.(type) {
 	case *player.Player:
@@ -82,17 +75,6 @@ func (r *RecorderViewer) ViewEntityTeleport(e world.Entity, pos mgl64.Vec3) {
 		r.r.PushEntityMovement(e, pos, e.Rotation())
 	}
 }
-
-func (r *RecorderViewer) ViewFurnaceUpdate(prevCookTime, cookTime, prevRemainingFuelTime, remainingFuelTime, prevMaxFuelTime, maxFuelTime time.Duration) {
-}
-
-func (r *RecorderViewer) ViewBrewingUpdate(prevBrewTime, brewTime time.Duration, prevFuelAmount, fuelAmount, prevFuelTotal, fuelTotal int32) {
-}
-
-func (r *RecorderViewer) ViewChunk(pos world.ChunkPos, dim world.Dimension, blockEntities map[cube.Pos]world.Block, c *chunk.Chunk) {
-}
-
-func (r *RecorderViewer) ViewTime(t int) {}
 
 func (r *RecorderViewer) ViewEntityItems(e world.Entity) {
 	switch e := e.(type) {
@@ -145,6 +127,7 @@ func (r *RecorderViewer) ViewEntityState(e world.Entity) {
 			r.r.PushPlayerSwimming(e, s.Swimming)
 			r.r.PushSetPlayerNameTag(e, s.NameTag)
 			r.r.PushPlayerOnFire(e, s.OnFire)
+			r.r.PushPlayerSetVisibleEffects(e, s.VisibleParticleEffectIDs)
 			return
 		}
 
@@ -175,6 +158,11 @@ func (r *RecorderViewer) ViewEntityState(e world.Entity) {
 		if prev.OnFire != s.OnFire {
 			r.r.PushPlayerOnFire(e, s.OnFire)
 		}
+		if len(s.VisibleParticleEffectIDs) > 0 || len(prev.VisibleParticleEffectIDs) > 0 {
+			if !internal.EqualEffectIDs(prev.VisibleParticleEffectIDs, s.VisibleParticleEffectIDs) {
+				r.r.PushPlayerSetVisibleEffects(e, s.VisibleParticleEffectIDs)
+			}
+		}
 	default:
 		s := internal.GetEntityState(e)
 		r.entityStatesMu.Lock()
@@ -193,7 +181,9 @@ func (r *RecorderViewer) ViewEntityState(e world.Entity) {
 	}
 }
 
-func (r *RecorderViewer) ViewEntityAnimation(e world.Entity, a world.EntityAnimation) {}
+func (r *RecorderViewer) ViewEntityAnimation(e world.Entity, a world.EntityAnimation) {
+	// TODO: implement this
+}
 
 func (r *RecorderViewer) ViewParticle(pos mgl64.Vec3, p world.Particle) {
 	switch p := p.(type) {
@@ -207,11 +197,18 @@ func (r *RecorderViewer) ViewParticle(pos mgl64.Vec3, p world.Particle) {
 }
 
 func (r *RecorderViewer) ViewSound(pos mgl64.Vec3, s world.Sound) {
+	vec := cube.PosFromVec3(pos)
 	switch s := s.(type) {
 	case sound.BlockBreaking:
-		r.r.PushBlockBreakingSound(cube.PosFromVec3(pos), s.Block)
+		r.r.PushBlockBreakingSound(vec, s.Block)
 	case sound.BlockPlace:
-		r.r.PushBlockPlaceSound(cube.PosFromVec3(pos), s.Block)
+		r.r.PushBlockPlaceSound(vec, s.Block)
+	case sound.BucketEmpty:
+		r.r.PushLiquidSound(vec, s.Liquid, false)
+	case sound.BucketFill:
+		r.r.PushLiquidSound(vec, s.Liquid, true)
+	default:
+		r.r.PushGeneralSound(pos, s)
 	}
 }
 
@@ -248,8 +245,6 @@ func (r *RecorderViewer) ViewEmote(e world.Entity, emote uuid.UUID) {
 	}
 }
 
-func (r *RecorderViewer) ViewSkin(e world.Entity) {}
-
-func (r *RecorderViewer) ViewWorldSpawn(pos cube.Pos) {}
-
-func (r *RecorderViewer) ViewWeather(raining, thunder bool) {}
+func (r *RecorderViewer) ViewSkin(e world.Entity) {
+	// TODO: implement this
+}
