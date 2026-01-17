@@ -84,7 +84,9 @@ func (p *replayPlayer) Hurt(float64, world.DamageSource) (float64, bool) { retur
 
 func (p *replayPlayer) SetUsingItem(useItem bool) {
 	updatePlayerEntityData(p.Player, "usingItem", useItem)
-	updatePlayerEntityData(p.Player, "usingSince", time.Now())
+	if useItem {
+		updatePlayerEntityData(p.Player, "usingSince", time.Now())
+	}
 	player_updateState(p.Player)
 }
 
