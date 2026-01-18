@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"github.com/akmalfairuz/df-replay/action"
 	"github.com/akmalfairuz/df-replay/internal"
+	"github.com/df-mc/dragonfly/server/block"
 	"github.com/df-mc/dragonfly/server/block/cube"
 	"github.com/df-mc/dragonfly/server/entity"
 	"github.com/df-mc/dragonfly/server/item"
@@ -557,9 +558,10 @@ func (r *Recorder) pushBlockSound(pos cube.Pos, b world.Block, t uint8) {
 
 // PushLiquidSound ...
 func (r *Recorder) PushLiquidSound(pos cube.Pos, l world.Liquid, isFill bool) {
+	_, isWater := l.(block.Water)
 	r.PushAction(&action.LiquidSound{
 		Position: cubeToBlockPos(pos),
-		Liquid:   action.FromBlock(l),
+		IsWater:  isWater,
 		Type:     lo.If(isFill, action.LiquidSoundTypeFill).Else(action.LiquidSoundTypeEmpty),
 	})
 }
