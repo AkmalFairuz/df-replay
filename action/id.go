@@ -31,4 +31,5 @@ const (
 	IDLiquidSound
 	IDGeneralSound
 	IDSetPlayerVisibleEffects
+	IDEntityAnimate
 )

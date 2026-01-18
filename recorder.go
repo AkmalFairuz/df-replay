@@ -206,6 +206,16 @@ func (r *Recorder) AddEntity(e world.Entity) {
 		extraData["IsTextType"] = byte(1)
 	case entity.TNTType:
 		extraData["Fuse"] = int32(e.(*entity.Ent).Behaviour().(*entity.PassiveBehaviour).Fuse().Milliseconds())
+	case entity.FallingBlockType:
+		extraData["Block"] = int32(internal.BlockToHash(e.(*entity.Ent).Behaviour().(*entity.FallingBlockBehaviour).Block()))
+	case entity.FireworkType:
+		fw := e.(*entity.Ent).Behaviour().(*entity.FireworkBehaviour)
+		extraData["Item"] = fw.Firework().EncodeNBT()
+	case entity.ArrowType, entity.SplashPotionType:
+		proj := e.(*entity.Ent).Behaviour().(*entity.ProjectileBehaviour)
+		if potionId := proj.Potion().Uint8(); potionId != 0 {
+			extraData["PotionID"] = int8(potionId)
+		}
 	}
 	type hasOwner interface {
 		Owner() *world.EntityHandle
@@ -730,15 +740,7 @@ func (r *Recorder) pushCrackBlock(pos cube.Pos, t uint8, dur time.Duration) {
 
 // PushPlayerTotemUse ...
 func (r *Recorder) PushPlayerTotemUse(p *player.Player) {
-	playerID := r.PlayerID(p)
-	if playerID == 0 {
-		return
-	}
-
-	r.PushAction(&action.PlayerAnimate{
-		PlayerID:  playerID,
-		Animation: action.PlayerAnimateTotemUse,
-	})
+	r.pushPlayerAnimate(p, action.PlayerAnimateTotemUse)
 }
 
 // PushPlayerSetVisibleEffects ...
@@ -750,6 +752,28 @@ func (r *Recorder) PushPlayerSetVisibleEffects(p *player.Player, effectIds []int
 	r.PushAction(&action.SetPlayerVisibleEffects{
 		PlayerID: playerID,
 		Effects:  lo.Map(effectIds, func(e int, _ int) uint8 { return uint8(e) }),
+	})
+}
+
+// PushEntityFireworkExplosion ...
+func (r *Recorder) PushEntityFireworkExplosion(e world.Entity) {
+	r.pushEntityAnimate(e, action.EntityAnimateFireworkExplosion)
+}
+
+// PushEntityArrowShake ...
+func (r *Recorder) PushEntityArrowShake(e world.Entity) {
+	r.pushEntityAnimate(e, action.EntityAnimateArrowShake)
+}
+
+// pushEntityAnimate ...
+func (r *Recorder) pushEntityAnimate(e world.Entity, animation uint8) {
+	entityID := r.EntityID(e)
+	if entityID == 0 {
+		return
+	}
+	r.PushAction(&action.EntityAnimate{
+		EntityID:  entityID,
+		Animation: animation,
 	})
 }
 

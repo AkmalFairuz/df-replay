@@ -33,7 +33,8 @@ func (packetHandler) HandleServerPacket(ctx *intercept.Context, pk packet.Packet
 		} else {
 			data = getEntityHandleData(h, "Data").(*entityBehaviour)
 		}
-		if data.identifier == "minecraft:item" {
+		switch data.identifier {
+		case "minecraft:item":
 			ctx.Cancel()
 			stack := item.NewStack(internal.HashToItem(uint32(data.extraData["Item"].(int64))), int(data.extraData["ItemCount"].(int32)))
 			conn := getConnBySession(s)
@@ -46,16 +47,33 @@ func (packetHandler) HandleServerPacket(ctx *intercept.Context, pk packet.Packet
 				EntityMetadata:  pk.EntityMetadata,
 			})
 			return
-		}
-		if data.identifier == "minecraft:tnt" {
+		case "minecraft:tnt":
 			fuseTime, ok := data.extraData["FuseTime"]
 			if !ok {
 				pk.EntityMetadata[protocol.EntityDataKeyFuseTime] = int32(80)
 			} else {
 				pk.EntityMetadata[protocol.EntityDataKeyFuseTime] = fuseTime.(int32) / 50
 			}
-			m := protocol.EntityMetadata(pk.EntityMetadata)
-			m.SetFlag(protocol.EntityDataKeyFlags, protocol.EntityDataFlagIgnited)
+			protocol.EntityMetadata(pk.EntityMetadata).SetFlag(protocol.EntityDataKeyFlags, protocol.EntityDataFlagIgnited)
+		case "minecraft:falling_block":
+			blockHash, ok := data.extraData["Block"]
+			if ok {
+				pk.EntityMetadata[protocol.EntityDataKeyVariant] = world.BlockRuntimeID(internal.HashToBlock(uint32(blockHash.(int32))))
+			}
+		case "minecraft:firework":
+			f, ok := data.extraData["Item"]
+			if ok {
+				it := item.Firework{}.DecodeNBT(f.(map[string]any)).(item.Firework)
+				pk.EntityMetadata[protocol.EntityDataKeyDisplayTileRuntimeID] = nbtconv_WriteItem(item.NewStack(it, 1), false)
+			}
+		case "minecraft:splash_potion", "minecraft:arrow":
+			potionId, ok := data.extraData["PotionID"]
+			if ok {
+				pk.EntityMetadata[protocol.EntityDataKeyAuxValueData] = int16(potionId.(int8))
+				if tip := uint8(potionId.(int8)); tip > 4 {
+					pk.EntityMetadata[protocol.EntityDataKeyCustomDisplay] = tip + 1
+				}
+			}
 		}
 		if _, isTextType := data.extraData["IsTextType"]; isTextType {
 			pk.EntityMetadata[protocol.EntityDataKeyVariant] = int32(world.BlockRuntimeID(block.Air{}))

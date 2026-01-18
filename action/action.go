@@ -43,6 +43,7 @@ var (
 		IDLiquidSound:             func() Action { return &LiquidSound{} },
 		IDGeneralSound:            func() Action { return &GeneralSound{} },
 		IDSetPlayerVisibleEffects: func() Action { return &SetPlayerVisibleEffects{} },
+		IDEntityAnimate:           func() Action { return &EntityAnimate{} },
 	}
 )
 

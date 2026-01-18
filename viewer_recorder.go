@@ -126,6 +126,13 @@ func (r *RecorderViewer) ViewEntityAction(e world.Entity, a world.EntityAction) 
 		case entity.EnchantedHitAction:
 			r.r.PushPlayerEnchantedHit(e)
 		}
+	default:
+		switch a.(type) {
+		case entity.FireworkExplosionAction:
+			r.r.PushEntityFireworkExplosion(e)
+		case entity.ArrowShakeAction:
+			r.r.PushEntityArrowShake(e)
+		}
 	}
 }
 

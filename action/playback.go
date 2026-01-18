@@ -70,4 +70,6 @@ type Playback interface {
 	SetPlayerVisibleEffects(tx *world.Tx, id uint32, effectIDs []int)
 	DoPlayerCriticalHit(tx *world.Tx, id uint32)
 	DoPlayerEnchantedHit(tx *world.Tx, id uint32)
+	DoFireworkExplosion(tx *world.Tx, id uint32)
+	DoArrowShake(tx *world.Tx, id uint32)
 }

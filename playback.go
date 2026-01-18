@@ -465,23 +465,11 @@ func (w *Playback) SetPlayerSneaking(tx *world.Tx, id uint32, sneaking bool) {
 }
 
 func (w *Playback) DoPlayerHurt(tx *world.Tx, id uint32) {
-	p, ok := w.openPlayer(tx, id)
-	if !ok {
-		return
-	}
-	for _, v := range player_viewers(p.Player) {
-		v.ViewEntityAction(p, entity.HurtAction{})
-	}
+	w.doPlayerAction(tx, id, entity.HurtAction{})
 }
 
 func (w *Playback) DoPlayerEating(tx *world.Tx, id uint32) {
-	p, ok := w.openPlayer(tx, id)
-	if !ok {
-		return
-	}
-	for _, v := range player_viewers(p.Player) {
-		v.ViewEntityAction(p, entity.EatAction{})
-	}
+	w.doPlayerAction(tx, id, entity.EatAction{})
 }
 
 func (w *Playback) SetPlayerUsingItem(tx *world.Tx, id uint32, usingItem bool) {
@@ -662,13 +650,7 @@ func (w *Playback) SetPlayerOnFire(tx *world.Tx, id uint32, onFire bool) {
 }
 
 func (w *Playback) DoPlayerTotemUse(tx *world.Tx, id uint32) {
-	p, ok := w.openPlayer(tx, id)
-	if !ok {
-		return
-	}
-	for _, v := range player_viewers(p.Player) {
-		v.ViewEntityAction(p, entity.TotemUseAction{})
-	}
+	w.doPlayerAction(tx, id, entity.TotemUseAction{})
 }
 
 func (w *Playback) PlayerVisibleEffects(tx *world.Tx, id uint32) ([]int, bool) {
@@ -719,22 +701,38 @@ func (w *Playback) SetPlayerVisibleEffects(tx *world.Tx, id uint32, effectIDs []
 }
 
 func (w *Playback) DoPlayerCriticalHit(tx *world.Tx, id uint32) {
-	p, ok := w.openPlayer(tx, id)
-	if !ok {
-		return
-	}
-	for _, v := range player_viewers(p.Player) {
-		v.ViewEntityAction(p, entity.CriticalHitAction{})
-	}
+	w.doPlayerAction(tx, id, entity.CriticalHitAction{})
 }
 
 func (w *Playback) DoPlayerEnchantedHit(tx *world.Tx, id uint32) {
+	w.doPlayerAction(tx, id, entity.EnchantedHitAction{})
+}
+
+func (w *Playback) doPlayerAction(tx *world.Tx, id uint32, action world.EntityAction) {
 	p, ok := w.openPlayer(tx, id)
 	if !ok {
 		return
 	}
 	for _, v := range player_viewers(p.Player) {
-		v.ViewEntityAction(p, entity.EnchantedHitAction{})
+		v.ViewEntityAction(p, action)
+	}
+}
+
+func (w *Playback) DoFireworkExplosion(tx *world.Tx, id uint32) {
+	w.doEntityAction(tx, id, entity.FireworkExplosionAction{})
+}
+
+func (w *Playback) DoArrowShake(tx *world.Tx, id uint32) {
+	w.doEntityAction(tx, id, entity.ArrowShakeAction{})
+}
+
+func (w *Playback) doEntityAction(tx *world.Tx, id uint32, action world.EntityAction) {
+	e, ok := w.openEntity(tx, id)
+	if !ok {
+		return
+	}
+	for _, v := range tx.Viewers(e.Position()) {
+		v.ViewEntityAction(e, action)
 	}
 }
 

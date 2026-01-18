@@ -108,3 +108,6 @@ func session_entityFromRuntimeID(*session.Session, uint64) (*world.EntityHandle,
 
 //go:linkname instanceFromItem github.com/df-mc/dragonfly/server/session.instanceFromItem
 func instanceFromItem(item.Stack) protocol.ItemInstance
+
+//go:linkname nbtconv_WriteItem github.com/df-mc/dragonfly/server/internal/nbtconv.WriteItem
+func nbtconv_WriteItem(item.Stack, bool) map[string]any

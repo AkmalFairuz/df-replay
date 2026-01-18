@@ -11,6 +11,10 @@ func ToParticleID(p world.Particle) (uint32, bool) {
 		return 1, true
 	case particle.BoneMeal:
 		return 2, true
+	case particle.Evaporate:
+		return 3, true
+	case particle.DustPlume:
+		return 4, true
 	}
 	// TODO: implement more particles
 	return 0, false
@@ -22,6 +26,10 @@ func FromParticleID(id uint32) (world.Particle, bool) {
 		return particle.HugeExplosion{}, true
 	case 2:
 		return particle.BoneMeal{}, true
+	case 3:
+		return particle.Evaporate{}, true
+	case 4:
+		return particle.DustPlume{}, true
 	}
 	return nil, false
 }
