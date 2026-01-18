@@ -37,9 +37,24 @@ func NewRecorderViewer(r *Recorder) world.Viewer {
 func (r *RecorderViewer) ViewEntity(e world.Entity) {
 	switch e := e.(type) {
 	case *player.Player:
+		if !e.GameMode().Visible() {
+			return
+		}
 		r.r.AddPlayer(e)
 	default:
 		r.r.AddEntity(e)
+	}
+}
+
+func (r *RecorderViewer) ViewEntityGameMode(e world.Entity) {
+	switch e := e.(type) {
+	case *player.Player:
+		if !e.GameMode().Visible() {
+			r.r.RemovePlayer(e)
+			r.playerStatesMu.Lock()
+			delete(r.playerStates, e.UUID())
+			r.playerStatesMu.Unlock()
+		}
 	}
 }
 
@@ -61,6 +76,9 @@ func (r *RecorderViewer) HideEntity(e world.Entity) {
 func (r *RecorderViewer) ViewEntityMovement(e world.Entity, pos mgl64.Vec3, rot cube.Rotation, onGround bool) {
 	switch e := e.(type) {
 	case *player.Player:
+		if !e.GameMode().Visible() { // early return if the player is invisible
+			return
+		}
 		r.r.PushPlayerMovement(e, pos, rot)
 	default:
 		r.r.PushEntityMovement(e, pos, rot)
@@ -114,6 +132,9 @@ func (r *RecorderViewer) ViewEntityAction(e world.Entity, a world.EntityAction) 
 func (r *RecorderViewer) ViewEntityState(e world.Entity) {
 	switch e := e.(type) {
 	case *player.Player:
+		if !e.GameMode().Visible() { // early return if the player is invisible
+			return
+		}
 		s := internal.GetPlayerState(e)
 		r.playerStatesMu.Lock()
 		prev, ok := r.playerStates[e.UUID()]
