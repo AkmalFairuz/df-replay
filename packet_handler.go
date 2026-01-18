@@ -55,7 +55,7 @@ func (packetHandler) HandleServerPacket(ctx *intercept.Context, pk packet.Packet
 				pk.EntityMetadata[protocol.EntityDataKeyFuseTime] = fuseTime.(int32) / 50
 			}
 			m := protocol.EntityMetadata(pk.EntityMetadata)
-			m.SetFlag(protocol.EntityDataFlagIgnited)
+			m.SetFlag(protocol.EntityDataKeyFlags, protocol.EntityDataFlagIgnited)
 		}
 		if _, isTextType := data.extraData["IsTextType"]; isTextType {
 			pk.EntityMetadata[protocol.EntityDataKeyVariant] = int32(world.BlockRuntimeID(block.Air{}))
