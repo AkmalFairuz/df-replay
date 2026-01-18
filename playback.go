@@ -843,7 +843,8 @@ func (w *Playback) reverseTick(tx *world.Tx, tick uint) {
 		return
 	}
 
-	for _, h := range reverseHandlers {
+	for i := len(reverseHandlers) - 1; i >= 0; i-- {
+		h := reverseHandlers[i]
 		playCtx := action.NewPlayContext(tx, w)
 		h(playCtx)
 	}
