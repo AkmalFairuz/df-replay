@@ -215,7 +215,7 @@ func (r *Recorder) AddEntity(e world.Entity) {
 	case entity.ArrowType, entity.SplashPotionType:
 		proj := e.(*entity.Ent).Behaviour().(*entity.ProjectileBehaviour)
 		if potionId := proj.Potion().Uint8(); potionId != 0 {
-			extraData["PotionID"] = int8(potionId)
+			extraData["PotionID"] = int32(potionId)
 		}
 	}
 	type hasOwner interface {

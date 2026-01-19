@@ -69,8 +69,8 @@ func (packetHandler) HandleServerPacket(ctx *intercept.Context, pk packet.Packet
 		case "minecraft:splash_potion", "minecraft:arrow":
 			potionId, ok := data.extraData["PotionID"]
 			if ok {
-				pk.EntityMetadata[protocol.EntityDataKeyAuxValueData] = int16(potionId.(int8))
-				if tip := uint8(potionId.(int8)); tip > 4 {
+				pk.EntityMetadata[protocol.EntityDataKeyAuxValueData] = int16(potionId.(int32))
+				if tip := uint8(potionId.(int32)); tip > 4 {
 					pk.EntityMetadata[protocol.EntityDataKeyCustomDisplay] = tip + 1
 				}
 			}
