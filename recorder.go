@@ -156,7 +156,6 @@ func (r *Recorder) AddPlayer(p *player.Player) {
 		r.playerIDs[p.UUID()] = playerID
 		r.nextID++
 	}
-	r.nextID++
 	r.mu.Unlock()
 
 	if !addedBefore {

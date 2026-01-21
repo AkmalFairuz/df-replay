@@ -54,6 +54,13 @@ func (r *RecorderViewer) ViewEntityGameMode(e world.Entity) {
 			r.playerStatesMu.Lock()
 			delete(r.playerStates, e.UUID())
 			r.playerStatesMu.Unlock()
+		} else {
+			r.playerStatesMu.Lock()
+			_, ok := r.playerStates[e.UUID()]
+			r.playerStatesMu.Unlock()
+			if !ok {
+				r.r.AddPlayer(e)
+			}
 		}
 	}
 }
